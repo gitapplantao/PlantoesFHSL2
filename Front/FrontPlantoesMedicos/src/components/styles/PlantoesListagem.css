@@ -1,0 +1,164 @@
+/* src/components/UserList.css */
+.user-list {
+    padding: 20px;
+  }
+  
+  .line-plantao-consulta {
+    width: 30%;
+    border-bottom: solid 2px #6cbc84;
+    margin: -10px auto 40px;
+  }
+  .user-list h1 {
+    font-size: 24px;
+    margin-bottom: 20px;
+  }
+  
+  .user-list ul {
+    list-style-type: none;
+    padding: 0;
+  }
+  
+  .user-list li {
+    margin-bottom: 15px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+  }
+  
+  .user-list p {
+    margin: 5px 0;
+  }
+  .user-list label {
+    margin: 5px 0;
+    color: #FFF;
+    padding: 10px 20px;
+  }  
+
+  .user-list div {
+    color: #FFF;
+    text-align: center;
+    font-size: 16px;
+  }  
+
+  .user-list input {
+    margin: 5px 0;
+    padding: 10px 20px;
+    margin-left: 10px;
+    margin-right: 10px;
+    border-radius: 4px;
+    border: 2px solid #6cbc84;
+    background-color: #555;
+    color: white;
+  }  
+
+  .user-list button {
+    background-color: #444;
+
+    color: #ffffff;
+    padding: 8px 16px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    border: 2px solid #555;
+    background-color: #444;
+    color: white;
+    font-size: 14px;
+    height: 40px;
+    cursor: pointer;
+    border-radius: 5px;
+    padding: 10px 20px;
+    margin-left: 10px;
+    margin-right: 10px;
+  }  
+
+  .user-list button:hover {
+    background-color: #555; /* Cor de fundo verde mais escuro */
+    transform: scale(1.0); /* Aumenta o tamanho do botão */
+    border:solid;
+    border-width: 2px;
+    border-color: #6cbc84;
+    text-decoration: none;
+    margin-left: 5px;
+  }
+  
+  .user-list button:active{
+    background-color:#6cbc84
+  }
+  
+
+  .user-list tr {
+    margin: 5px 0;
+    color: #FFF;
+    text-align: center;
+    font-size: 16px;
+  }    
+
+  .user-list th, td {
+    border: 1px solid #ddd;
+    padding: 2px;
+    text-align: center; /* Alinha o texto no centro */
+
+  }   
+
+  .user-list table {
+    width: 30%;
+    border-collapse: collapse;
+    margin: 20px auto;
+  }
+
+  .text-left {
+    text-align: left;
+  }
+  
+.card1 {
+  background-color: #444;
+  width: 250px;
+  height: 200px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  border:solid;
+  border-width: 2px;
+  padding: 10px;
+  transition: 0.4s;
+  margin: 5px;
+}
+
+.card1:hover{
+  border: solid;
+  border-width: 2px;
+  border-color: #6cbc84;
+  translate: 0 -10px;
+}
+
+@keyframes cardafter {
+  0% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
+/* Container para exibir os cards em um layout flexível */
+.cards-container {
+  display: flex;
+  padding: 20px;
+  flex-wrap: wrap;
+  justify-content: center; /* Centraliza os cards horizontalmente */
+}
+
+.titleCard h2{
+  display: flex;
+  font-size: 20px;
+}
+
+
