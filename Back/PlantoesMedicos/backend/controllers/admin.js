@@ -411,88 +411,201 @@ async function confirmarPlantao(req, res) {
       connection = await getConnection();
       console.log('Conexão com o banco de dados estabelecida com sucesso.');
 
+      const dtInicio = new Date(dt_inicio);
+      const horas = dtInicio.getHours();
       let nr_Seq_tipo_plantao, nr_seq_regra_esp;
+
       switch (tipo_escala) {
           case 'CARD':
               nr_Seq_tipo_plantao = 34;
               nr_seq_regra_esp = 35;
               break;
+
           case 'PED':
               nr_Seq_tipo_plantao = 12;
               nr_seq_regra_esp = 30;
               break;
+
           case 'CIRT':
-              nr_Seq_tipo_plantao = 45;
-              nr_seq_regra_esp = 44;
+              if (horas >= 7 && horas <= 18){ //diurno
+                nr_Seq_tipo_plantao = 44;
+                nr_seq_regra_esp = 45;
+              } else { //noturno
+                nr_Seq_tipo_plantao = 45;
+                nr_seq_regra_esp = 46;
+              }
               break;
+
           case 'CVAR':
+            if (horas >= 7 && horas <= 18){ //diurno
               nr_Seq_tipo_plantao = 38;
               nr_seq_regra_esp = 39;
+            } else { //noturno
+              nr_Seq_tipo_plantao = 39;
+              nr_seq_regra_esp = 40;
+            }
               break;
+
           case 'OFT':
               nr_Seq_tipo_plantao = 37;
               nr_seq_regra_esp = 38;
               break;
+
           case 'GO1':
+            if (horas >= 7 && horas <= 18){ //diurno
               nr_Seq_tipo_plantao = 29;
               nr_seq_regra_esp = 11;
+            } else { //noturno
+              nr_Seq_tipo_plantao = 20;
+              nr_seq_regra_esp = 21;
+            }
               break;
+
           case 'GO2':
+            if (horas >= 7 && horas <= 18){ //diurno
               nr_Seq_tipo_plantao = 29;
               nr_seq_regra_esp = 11;
+            } else { //noturno
+              nr_Seq_tipo_plantao = 20;
+              nr_seq_regra_esp = 21;
+            }
               break;
+
           case 'HKIDS':
-              nr_Seq_tipo_plantao = 46;
-              nr_seq_regra_esp = 47;
+            if (horas >= 13 && horas <= 18){ //diurno
+              nr_Seq_tipo_plantao = 51;
+              nr_seq_regra_esp = 51;  
+            } else { //noturno
+                nr_Seq_tipo_plantao = 46;
+                nr_seq_regra_esp = 47;
+            }
               break;
+
           case 'OTO':
-              nr_Seq_tipo_plantao = 40;
-              nr_seq_regra_esp = 41;
+            if (horas >= 7 && horas <=  18){ //diurno
+                nr_Seq_tipo_plantao = 40;
+                nr_seq_regra_esp = 41;
+              } else { //noturno
+                nr_Seq_tipo_plantao = 41;
+                nr_seq_regra_esp = 42;
+              }
               break;
+
           case 'PS1':
-              nr_Seq_tipo_plantao = 24;
-              nr_seq_regra_esp = 25;
+            if (horas >= 7 && horas <= 18){ //diurno
+                nr_Seq_tipo_plantao = 24;
+                nr_seq_regra_esp = 25;
+              } else { //noturno
+                nr_Seq_tipo_plantao = 23;
+                nr_seq_regra_esp = 23;
+              }
               break;
+
           case 'PS2':
-              nr_Seq_tipo_plantao = 21;
-              nr_seq_regra_esp = 22;
+            if (horas >= 7 && horas <= 18){ //diurno
+                nr_Seq_tipo_plantao = 21;
+                nr_seq_regra_esp = 22;
+              } else {
+                nr_Seq_tipo_plantao = 26;
+                nr_seq_regra_esp = 27;
+              }
               break;
+
           case 'HKP':
-              nr_Seq_tipo_plantao = 8;
-              nr_seq_regra_esp = 8;
+              if (horas >= 7 && horas <=12){ //dia
+                nr_Seq_tipo_plantao = 8;
+                nr_seq_regra_esp = 8;
+              } else if (horas >= 13 && horas <= 18){ //tarde
+                nr_Seq_tipo_plantao = 10;
+                nr_seq_regra_esp = 9;
+              } else { //noite
+                nr_Seq_tipo_plantao = 11;
+                nr_seq_regra_esp = 16;
+              }
               break;
+
           case 'ORTO':
-              nr_Seq_tipo_plantao = 18;
-              nr_seq_regra_esp = 19;
+            if (horas >= 7 && horas <= 12){ //dia
+                nr_Seq_tipo_plantao = 18;
+                nr_seq_regra_esp = 19;
+              } else if (horas >=13 && horas <=18){ //tarde
+                nr_Seq_tipo_plantao = 17;
+                nr_seq_regra_esp = 20;
+              } else { //noite
+                nr_Seq_tipo_plantao = 19;
+                nr_seq_regra_esp = 18;
+              }
               break;
+
           case 'PART':
+            if (horas >= 7 && horas <= 18){ //diurno
               nr_Seq_tipo_plantao = 48;
               nr_seq_regra_esp = 49;
+            } else { //noite
+              nr_Seq_tipo_plantao = 15;
+              nr_seq_regra_esp = 10;
+            }
               break;
+
           case 'UCI':
+            if (horas >= 7 && horas <= 18){ //diurno
               nr_Seq_tipo_plantao = 47;
-              nr_seq_regra_esp = 48;
+              nr_seq_regra_esp = 48
+            } else { //noturno
+              nr_Seq_tipo_plantao = 42;
+              nr_sequencia = 44;
+            }
               break;
+
           case 'URO':
+            if (horas >= 7 && horas <= 18){ //diurno
               nr_Seq_tipo_plantao = 36;
               nr_seq_regra_esp = 37;
+            } else { //noturno
+              nr_Seq_tipo_plantao = 35;
+              nr_seq_regra_esp = 36;
+            }
               break;
+
           case 'UTIG1':
+            if (horas >= 7 && horas <= 18){ //diurno
               nr_Seq_tipo_plantao = 28;
               nr_seq_regra_esp = 28;
-              break;
-          case 'UTIG2':
+            } else { //noturno
               nr_Seq_tipo_plantao = 27;
-              nr_seq_regra_esp = 28;
+              nr_seq_regra_esp = 29;
+            }
               break;
+
+          case 'UTIG2':
+            if (horas >= 7 && horas <= 18){ //diurno
+              nr_Seq_tipo_plantao = 28;
+              nr_seq_regra_esp = 28;
+            } else { //noturno
+              nr_Seq_tipo_plantao = 27;
+              nr_seq_regra_esp = 29;
+            }
+              break;
+
           case 'UTIN':
+            if (horas >= 7  && horas <= 18){ //diurno
               nr_Seq_tipo_plantao = 30;
               nr_seq_regra_esp = 31;
+            } else { //noturno
+              nr_Seq_tipo_plantao = 31;
+              nr_seq_regra_esp = 32;}
               break;
+
           case 'UTIP':
+            if (horas >= 7 && horas <= 18){ //diurno
               nr_Seq_tipo_plantao = 32;
               nr_seq_regra_esp = 33;
+            } else {
+              nr_Seq_tipo_plantao = 33;
+              nr_seq_regra_esp = 34;
+            }
               break;
+
           default:
               return res.status(400).json({ message: "Tipo de escala inválido." });
       }

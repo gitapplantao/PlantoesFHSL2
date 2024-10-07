@@ -164,9 +164,7 @@ const PlantoesAdmin = () => {
       <Header />
       <div className="plantoes-admin">
         <div className='title-plantao-admin'>
-          <img src={LogoA} className="logo-title-admin" alt="Logo" />
           <h1 style={{ fontFamily: 'Arial, sans-serif', fontSize: '30px' }}>Consulta de Plantões</h1>
-          <img src={LogoA} className="logo-title-admin" alt="Logo" />
         </div>
         <div className='line-admin'></div>
 
