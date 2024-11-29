@@ -171,7 +171,7 @@ const PlantoesAdmin = () => {
         <div className='users-found'>
           <div className='usuarios'>
             <div className='pesquisa'>
-              <label className="teste">
+              <label className="filtro-nome">
                 <span className="icon">
                 <IoSearchOutline/>
                 </span>
@@ -232,7 +232,7 @@ const PlantoesAdmin = () => {
               
               <div className="modal-footer">
                 <button onClick={handleModalSubmit} className="btn-custom">Consultar</button>
-                <button onClick={exportTableToExcel} className="btn-custom">Baixar Tabela XLSX</button>
+                <button onClick={exportTableToExcel} className="btn-custom">Baixar Tabela</button>
               </div>
 
               {plantoes.length > 0 && (
@@ -281,11 +281,12 @@ const PlantoesAdmin = () => {
                     type="month"
                     value={selectedDateMesAno}
                     onChange={(e) => setSelectedDateMesAno(e.target.value)}
+                    className="filtro-download-mes"
                   />
                 </label>
               </div>
               <div className="modal-footer">
-                <button onClick={handleDownload} className="btn-custom">Baixar XLSX</button>
+                <button onClick={handleDownload} className="btn-custom">Baixar tabela</button>
               </div>
             </div>
           </div>

@@ -10,7 +10,6 @@ function Plantoes24() {
     const [dataMesAno, setDataMesAno] = useState('');
     const [erro, setErro] = useState('');
     const [confirmado, setConfirmado] = useState(new Set());
-    const listaRef = useRef(null);
     const [scrollPosition, setScrollPosition] = useState(0); // Adicionado para rastrear a posição de rolagem
 
     const handleRadioChange = (event) => {
@@ -365,7 +364,29 @@ function Plantoes24() {
                             />
                             Pronto Socorro 2° Grupo
                             </label>
-                            
+
+                            <label className='cardiologia'>
+                                <input
+                                type='radio'
+                                name='tipoEscala'
+                            value='CAD'
+                            checked={tipoEscala ==='CAD'}
+                            onChange={handleRadioChange}
+                            />
+                            Cardiologia
+                            </label>
+
+                            <label className='cardiologiaAmbulatorial'>
+                                <input
+                                type='radio'
+                                name='tipoEscala'
+                            value='AMBC'
+                            checked={tipoEscala === 'AMBC'}
+                            onChange={handleRadioChange}
+                            />
+                            Ambulatório de Cardiologia SUS
+                            </label>
+
                         </div>    
                     </div>
                 </div>

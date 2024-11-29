@@ -255,11 +255,12 @@ input[type="checkbox"]:checked + .checkmark {
 }
 
 .add-plantao {
-  color: #6cbc84;
   background: none;
   border: none;
   cursor: pointer;
   font-size: 12px;
+  color: #0E7AFE;
+  margin-left: 0px;
   padding: 0;
 }
 
@@ -420,8 +421,8 @@ input[type="checkbox"]:checked + .checkmark {
   background-color: none;
 }
 .conteudo-card h3{
- color:#fff;
- font-size: 18px;
+  color:#fff;
+  font-size: 18px;
 }
 .no-plantoes {
   text-align: center;
@@ -451,14 +452,20 @@ input[type="checkbox"]:checked + .checkmark {
   align-items: center;
 }
 
-.modal-content2 {
+.menu-plantoes-select {
   padding: 40px;
   overflow-y: auto;
 }
 @media (max-height: 868px) {
-  .modal-content2 {
-    max-height: calc(100vh - 20px); /* Ajustar conforme necessário */
+
+  .menu-plantoes-select {
+    max-height: calc(80vh - 20px); /* Ajustar conforme necessário */
   }
+
+  .line-plantao {
+    width: 70%;
+  }
+
 }
 
 .close {
@@ -483,10 +490,11 @@ input[type="checkbox"]:checked + .checkmark {
 
 .modal-footer {
   display: flex;
+  gap: 60px;
   justify-content: center;
 }
 
-.confirm-button, .cancel-button {
+.confirmar-plantoes {
   padding: 12px 24px;
   margin-left: 20px;
   border: none;
@@ -494,42 +502,47 @@ input[type="checkbox"]:checked + .checkmark {
   cursor: pointer;
   font-size: 16px;
   transition: all 0.3s ease;
+  background-color: #6cbc84;
+  color: white;
+  margin: 0px;
+}
+
+.cancel-button {
+  padding: 12px 24px;
+  margin-left: 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  background-color: #e3164d;
+  color: white;
+  margin: 0px;
 }
 
 .text-center {
   text-align: center;
 }
 
-.confirm-button {
-  background-color: #6cbc84;
-  color: white;
-}
-
-.cancel-button {
-  background-color: #e3164d;
-  color: white;
-}
-
-.confirm-button:hover, .cancel-button:hover {
+.confirmar-plantoes:hover, .cancel-button:hover {
   transform: translateY(-3px);
 }
 
-.modal-card p{
+.modal-card p{ /* precisa */
   margin:5px;
 }
 
-.modal-card input{
-  width: 70%;
+.modal-card input{ /*precisa, estiliza os campos de informação */
+  width: 100%;
   padding: 14px;
   margin-bottom: 20px;
   border: none;
-  border-radius: 10px;
+  border-radius: 5px;
   background-color: rgba(255, 255, 255, 0.1);
   color: #ffffff;
   font-size: 16px;
   outline: none;
 }
-
 
 .modal-card input::placeholder {
   color: rgba(255, 255, 255, 0.5);
@@ -552,18 +565,12 @@ input[type="checkbox"]:checked + .checkmark {
   align-items: center;
 }
 
-
-
-
-
-
-/* Estilo para o select customizado */
 .custom-select {
   width: 100%;
   padding: 14px;
   margin-bottom: 20px;
   border: none;
-  border-radius: 10px;
+  border-radius: 5px;
   background-color: rgba(255, 255, 255, 0.1);
   color: #ffffff;
   font-size: 16px;
@@ -575,7 +582,6 @@ input[type="checkbox"]:checked + .checkmark {
   color: #fff;
 }
 
-/* Estilo para o menu */
 .menu {
   position: absolute;
   top: calc(18% + 10px); /* Ajuste conforme necessário */
@@ -728,8 +734,13 @@ input[type="checkbox"]:checked + .checkmark {
     max-width: 90%;
   }
   .modal-logo {
-    width: 80px;
+    width: 150px;
   }
+
+  .texto-dados-plantao {
+    font-size: 14px;
+  }
+
   .menu {
     width: 100%; /* Em telas muito pequenas, ocupa 100% da largura */
     left: 0;

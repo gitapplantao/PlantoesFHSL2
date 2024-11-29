@@ -28,4 +28,4 @@ function ensureAuth(request, response, next) {
   }
 }
 
-module.exports = ensureAuth;
+module.exports = ensureAuth

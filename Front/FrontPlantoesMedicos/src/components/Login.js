@@ -104,7 +104,7 @@ const handleLogin = async (e) => {
                   <img src={atencao} className='img-atencao' alt="Símbolo de Atenção" />
                   <h2>Atenção</h2>
                   <h3>Você precisa alterar sua senha antes de continuar.</h3>
-                  <button onClick={handleConfirmChangePassword}>OK</button>
+                  <button onClick={handleConfirmChangePassword}><strong> OK </strong> </button>
                 </div>
               </div>
             </div>
@@ -130,6 +130,7 @@ const handleLogin = async (e) => {
           ) : (
             <form onSubmit={handleResetPassword} className="reset-password-form">
               <h2>Redefinir Senha</h2>
+              <h3 className='texto-redefinir'>Para prosseguir, é necessário informar uma nova senha.</h3>
               <input
                 type="password"
                 placeholder="Nova Senha"

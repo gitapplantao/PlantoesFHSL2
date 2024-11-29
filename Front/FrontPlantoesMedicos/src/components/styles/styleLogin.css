@@ -39,7 +39,8 @@
 }
 
 .login-form h2 {
-  margin-bottom: 20px;
+  margin-top: 10px;
+  margin-bottom: 10px;
   color: #6cbc84;
 }
 
@@ -61,7 +62,9 @@
 .login-form button {
   width: 100%;
   padding: 10px;
-  margin-left: 2px;
+  margin-left: 0px;
+  margin-top: 10px;
+  margin-bottom: 10px;
   background-color: #6cbc84;
   border: none;
   color: #1e1e1e;
@@ -89,6 +92,13 @@
   }
 }
 
+.texto-redefinir {
+  color: #ffffff;
+  font-size: 14px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
 .reset-password-form {
   background-color: #1e1e1e;
   padding: 20px 40px;
@@ -100,7 +110,8 @@
 }
 
 .reset-password-form h2 {
-  margin-bottom: 20px;
+  margin-bottom: 10px;
+  margin-top: 10px;
   color: #6cbc84;
 }
 
@@ -123,6 +134,8 @@
   width: 100%;
   padding: 10px;
   margin-left: -1px;
+  margin-top: 10px;
+  margin-bottom: 10px;
   background-color: #6cbc84;
   border: none;
   color: #1e1e1e;
@@ -134,6 +147,22 @@
 
 .reset-password-form button:hover {
   background-color: #258b44;
+}
+
+.password-change-notice {
+  display: flex;
+  color: red;
+  text-decoration: underline;
+  margin-top: 5px;
+  display: block;
+}
+
+.success-message{
+  display: flex;
+  color: #7CFC00;
+  text-decoration: underline;
+  margin-top: 5px;
+  display: block;
 }
 
 .change-password-notice {
@@ -222,25 +251,30 @@
 }
 
 .mensage-aviso img {
-  margin-bottom: 20px;
+  margin-bottom: 10px;
 }
 
 .mensage-aviso h2 {
   color: #6cbc84;
   margin-bottom: 10px;
+  margin-top: 10px
 }
 
 .mensage-aviso h3 {
-  color: #fff;
-  margin-bottom: 20px;
+  color: #ffffff;
+  font-size: 14px;
+  margin-top: 10px;
+  margin-bottom: 10px;
 }
 
 .mensage-aviso button {
   background-color: #6cbc84;
-  color: #1e1e1e;
+  color: #ffffff;
   border: none;
   padding: 10px 20px;
-  border-radius: 4px;
+  border-radius: 5px;
+  margin-top: 10px;
+  margin-left: 0px;
   cursor: pointer;
   transition: background-color 0.5s;
 }

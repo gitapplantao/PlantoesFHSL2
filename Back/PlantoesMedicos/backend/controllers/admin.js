@@ -411,12 +411,22 @@ async function confirmarPlantao(req, res) {
       connection = await getConnection();
       console.log('Conexão com o banco de dados estabelecida com sucesso.');
 
-      const dtInicio = new Date(dt_inicio);
+      const dtInicio = new Date(dt_inicio.replace(/(\d{2})\/(\d{2})\/(\d{4})/, "$3-$2-$1"));
+      if (isNaN(dtInicio.getTime())){
+        console.error('Formato de data inválido: ${dt_inicio}');
+        return res.status(400).json({message: 'Formato de data inválido.'});
+      }
+
       const horas = dtInicio.getHours();
+      const diasDaSemana = ["Domingo", "Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado"];
+      const diaSemana = diasDaSemana[dtInicio.getDay()];
+
+      console.log(`Dia da semana: ${diaSemana}, Horas ${horas}`)
+
       let nr_Seq_tipo_plantao, nr_seq_regra_esp;
 
       switch (tipo_escala) {
-          case 'CARD':
+          case 'CARD': //cirurgia cardiaca
               nr_Seq_tipo_plantao = 34;
               nr_seq_regra_esp = 35;
               break;
@@ -427,72 +437,80 @@ async function confirmarPlantao(req, res) {
               break;
 
           case 'CIRT':
-              if (horas >= 7 && horas <= 18){ //diurno
-                nr_Seq_tipo_plantao = 44;
-                nr_seq_regra_esp = 45;
-              } else { //noturno
                 nr_Seq_tipo_plantao = 45;
                 nr_seq_regra_esp = 46;
-              }
               break;
 
           case 'CVAR':
-            if (horas >= 7 && horas <= 18){ //diurno
-              nr_Seq_tipo_plantao = 38;
-              nr_seq_regra_esp = 39;
-            } else { //noturno
               nr_Seq_tipo_plantao = 39;
               nr_seq_regra_esp = 40;
-            }
               break;
 
           case 'OFT':
               nr_Seq_tipo_plantao = 37;
               nr_seq_regra_esp = 38;
               break;
+          
+          case 'AMBC':
+              nr_Seq_tipo_plantao = 55;
+              nr_seq_regra_esp = 55;
+              break;
 
           case 'GO1':
-            if (horas >= 7 && horas <= 18){ //diurno
+            if (horas >= 7 && horas <= 18 && (diaSemana !== 'Sábado' && diaSemana !== 'Domingo')) { // diurno
               nr_Seq_tipo_plantao = 29;
               nr_seq_regra_esp = 11;
-            } else { //noturno
+            } else if (horas >= 7 && horas <= 18 && (diaSemana === 'Sábado' || diaSemana === 'Domingo')) { // diurno final de semana
+              nr_Seq_tipo_plantao = 13;
+              nr_seq_regra_esp = 13;
+            } else if ((horas >= 19 || horas < 7) && (diaSemana === 'Sábado' || diaSemana === 'Domingo')) { // noturno final de semana
+              nr_Seq_tipo_plantao = 14;
+              nr_seq_regra_esp = 12;
+            } else { // noturno
               nr_Seq_tipo_plantao = 20;
               nr_seq_regra_esp = 21;
             }
-              break;
+            break;
 
           case 'GO2':
-            if (horas >= 7 && horas <= 18){ //diurno
+            if (horas >= 7 && horas <= 18 && (diaSemana !== 'Sábado' && diaSemana !== 'Domingo')) { // diurno
               nr_Seq_tipo_plantao = 29;
               nr_seq_regra_esp = 11;
-            } else { //noturno
+            } else if (horas >= 7 && horas <= 18 && (diaSemana === 'Sábado' || diaSemana === 'Domingo')) { // diurno final de semana
+              nr_Seq_tipo_plantao = 13;
+              nr_seq_regra_esp = 13;
+            } else if ((horas >= 19 || horas < 7) && (diaSemana === 'Sábado' || diaSemana === 'Domingo')) { // noturno final de semana
+              nr_Seq_tipo_plantao = 14;
+              nr_seq_regra_esp = 12;
+            } else { // noturno
               nr_Seq_tipo_plantao = 20;
               nr_seq_regra_esp = 21;
             }
-              break;
+            break;
 
           case 'HKIDS':
-            if (horas >= 13 && horas <= 18){ //diurno
-              nr_Seq_tipo_plantao = 51;
-              nr_seq_regra_esp = 51;  
-            } else { //noturno
+            if (horas >= 7 && horas <= 12){ //dia
+                nr_Seq_tipo_plantao = 52;
+                nr_seq_regra_esp = 53;
+              } else if (horas >=13 && horas <=18){ //tarde
+                nr_Seq_tipo_plantao = 51;
+                nr_seq_regra_esp = 51;
+              } else { //noite
                 nr_Seq_tipo_plantao = 46;
                 nr_seq_regra_esp = 47;
-            }
-              break;
+              }
+            break;
 
           case 'OTO':
-            if (horas >= 7 && horas <=  18){ //diurno
-                nr_Seq_tipo_plantao = 40;
-                nr_seq_regra_esp = 41;
-              } else { //noturno
-                nr_Seq_tipo_plantao = 41;
-                nr_seq_regra_esp = 42;
-              }
-              break;
+            nr_Seq_tipo_plantao = 41;
+            nr_seq_regra_esp = 42;
+            break;
 
           case 'PS1':
-            if (horas >= 7 && horas <= 18){ //diurno
+            if (horas >= 7 && horas <= 18 && (diaSemana === 'Sábado' || diaSemana === 'Domingo')) { // diurno final de semana
+                nr_Seq_tipo_plantao = 22;
+                nr_seq_regra_esp = 24;
+              } else if (horas >= 7 && horas <= 18){ //diurno
                 nr_Seq_tipo_plantao = 24;
                 nr_seq_regra_esp = 25;
               } else { //noturno
@@ -502,17 +520,20 @@ async function confirmarPlantao(req, res) {
               break;
 
           case 'PS2':
-            if (horas >= 7 && horas <= 18){ //diurno
+            if (horas >= 7 && horas <= 18 && (diaSemana === 'Sábado' || diaSemana === 'Domingo')) { // diurno final de semana
+                nr_Seq_tipo_plantao = 25;
+                nr_seq_regra_esp = 26;
+              } else if (horas >= 7 && horas <= 18){ //diurno
                 nr_Seq_tipo_plantao = 21;
                 nr_seq_regra_esp = 22;
-              } else {
+              } else { //noturno
                 nr_Seq_tipo_plantao = 26;
                 nr_seq_regra_esp = 27;
               }
               break;
 
           case 'HKP':
-              if (horas >= 7 && horas <=12){ //dia
+            if (horas >= 7 && horas <=12){ //dia
                 nr_Seq_tipo_plantao = 8;
                 nr_seq_regra_esp = 8;
               } else if (horas >= 13 && horas <= 18){ //tarde
@@ -538,7 +559,10 @@ async function confirmarPlantao(req, res) {
               break;
 
           case 'PART':
-            if (horas >= 7 && horas <= 18){ //diurno
+            if (horas >= 7 && horas <= 18 && (diaSemana === 'Sábado' || diaSemana === 'Domingo')) { // diurno final de semana
+              nr_Seq_tipo_plantao = 16;
+              nr_seq_regra_esp = 17;
+            } else if (horas >= 7 && horas <= 18){ //diurno
               nr_Seq_tipo_plantao = 48;
               nr_seq_regra_esp = 49;
             } else { //noite
@@ -548,7 +572,10 @@ async function confirmarPlantao(req, res) {
               break;
 
           case 'UCI':
-            if (horas >= 7 && horas <= 18){ //diurno
+             if (horas >= 7 && horas <= 18 && (diaSemana === 'Sábado' || diaSemana === 'Domingo')) { // diurno final de semana
+              nr_Seq_tipo_plantao = 43;
+              nr_seq_regra_esp = 43;
+            } else if (horas >= 7 && horas <= 18){ //diurno
               nr_Seq_tipo_plantao = 47;
               nr_seq_regra_esp = 48
             } else { //noturno
@@ -558,13 +585,8 @@ async function confirmarPlantao(req, res) {
               break;
 
           case 'URO':
-            if (horas >= 7 && horas <= 18){ //diurno
-              nr_Seq_tipo_plantao = 36;
-              nr_seq_regra_esp = 37;
-            } else { //noturno
               nr_Seq_tipo_plantao = 35;
               nr_seq_regra_esp = 36;
-            }
               break;
 
           case 'UTIG1':
@@ -600,16 +622,26 @@ async function confirmarPlantao(req, res) {
             if (horas >= 7 && horas <= 18){ //diurno
               nr_Seq_tipo_plantao = 32;
               nr_seq_regra_esp = 33;
-            } else {
+            } else { //noturno
               nr_Seq_tipo_plantao = 33;
               nr_seq_regra_esp = 34;
+            }
+              break;
+
+          case 'CAD': //cardiologia
+            if (horas >= 7 && horas <= 18) { //cardiologia FDS e feriado diurno
+              nr_Seq_tipo_plantao = 56;
+              nr_seq_regra_esp = 56;
+            } else { // cardiologia FDS e feriado noite
+              nr_Seq_tipo_plantao = 54;
+              nr_seq_regra_esp = 54;
             }
               break;
 
           default:
               return res.status(400).json({ message: "Tipo de escala inválido." });
       }
-
+      
       const query = `
           INSERT INTO MEDICO_PLANTAO (
               cd_estabelecimento, 
@@ -667,6 +699,7 @@ async function confirmarPlantao(req, res) {
           }, { autoCommit: true });
           console.log('Inserção realizada', result);
       }
+      console.log("Tipo escala:", tipo_escala, "Seq tipo plantão:", nr_Seq_tipo_plantao, "Regra esp:", nr_seq_regra_esp);
 
       res.status(200).json({ message: "Plantão confirmado com sucesso." });
 

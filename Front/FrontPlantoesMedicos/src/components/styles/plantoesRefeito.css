@@ -222,18 +222,6 @@ input[type="checkbox"] {
     justify-content: flex-start;
 }
 
-.cardiologia{
-    display: flex;
-    cursor: pointer;
-    justify-content: flex-start;
-}
-
-.cardiologiaAmbulatorial{
-    display: flex;
-    cursor: pointer;
-    justify-content: flex-start;
-}
-
 .plantoes-list{
     display: flex;
     align-items: center;
@@ -241,9 +229,7 @@ input[type="checkbox"] {
 }
 
 .plantao-card {
-    border: solid;
-    border-width: 2px;
-    border-color: #555;
+    border: solid 2px #555;
     width: 40%;
     display: flex;
     align-items: center;
@@ -252,11 +238,118 @@ input[type="checkbox"] {
     border-radius: 8px;
     padding: 16px;
     margin: 16px 0;
+    cursor: pointer;
     transition: 0.4s;
-
 }
 
-.plantao-card:hover{
+.plantao-card.selected {
     border-color: #6cbc84;
-    translate: 0 -10px;
+    transform: translateY(-10px);
 }
+
+.buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.plantao-card .buttons {
+    display: none;
+}
+
+.plantao-card.selected .buttons {
+    display: flex;
+}
+
+.button-finalizar {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.plantao-card .button-finalizar  {
+    display: none;
+}
+
+.plantao-card.selected .button-finalizar  {
+    display: flex;
+}
+
+.selecao-grupo-horarios {
+    display: flex;    
+    justify-content: center;
+}
+
+.selecao-tipo-plantao {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.radio-group-escalas {
+    display: flex;
+    justify-content: center;
+    border: 2px solid #6cbc84;
+    border-radius: 5px;
+    width: 200px;
+    height: 180px;
+    background-color: #333;
+}
+
+.botao-manha {
+    display: flex;
+    justify-content: flex-start;
+}
+
+.botao-tarde {
+    display: flex;
+    justify-content: flex-start;
+}
+
+.botao-noite {
+    display: flex;
+    justify-content: flex-start;
+}
+
+.botao-diurno {
+    display: flex;
+    justify-content: flex-start;
+}
+
+.botao-24horas {
+    display: flex;
+    justify-content: flex-start;
+}
+
+.confirm-button-plantoes {
+    background-color: #6cbc84 !important;
+    color: #ffffff !important;
+    border: none !important;
+    padding: 10px 20px !important;
+    border-radius: 4px !important;
+    cursor: pointer !important;
+    font-size: 16px !important;
+    margin-left: 0px !important;
+    margin-top: 16px !important;
+}
+
+.permissao-plantao-mensagem {
+    display: flex;
+    color: red;
+    justify-content: center;
+    text-decoration: underline;
+    margin-top: 10px;
+}
+
+
+input[type="date"] {
+    margin-left: 10px;
+    margin-top: 16px;
+    padding: 8px;
+    border-radius: 4px;
+    border: 2px solid #6cbc84;
+    background-color: #444;
+    color: white;
+}
+

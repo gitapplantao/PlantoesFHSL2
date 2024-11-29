@@ -76,7 +76,7 @@ const PlantoesListagem = () => {
 
       <div className='line-plantao-consulta'></div>
 
-      <div style={{ fontFamily: 'Arial, sans-serif', fontSize: '18px' }}>
+      <div className='filtro-data' style={{ fontFamily: 'Arial, sans-serif', fontSize: '18px' }}>
         Data Inicial:
         <input
           type="date"
