@@ -726,25 +726,22 @@ async function obterEscalasAtivas(req, res) {
   }
 }
 
+
 async function register(req, res) {
   try {
-    // Verifica se o usuário está autenticado
     if (!req.user || !req.user.id) {
       return res.status(401).json({ message: "Usuário não autenticado." });
     }
 
-    // Obtém os dados do request body
     const { cd_pessoa_fisica, nm_completo, nm_usuario } = req.body;
 
-    // Verifica se todos os campos necessários foram fornecidos
     if (!cd_pessoa_fisica || !nm_completo || !nm_usuario) {
       return res.status(400).json({ message: "Todos os campos são obrigatórios." });
     }
 
-    const connection = await getConnection(); // Conectar ao banco de dados
+    const connection = await getConnection();
 
-    // Verifica se o usuário já existe
-    const checkUserQuery = `SELECT COUNT(*) AS COUNT FROM FHSL_APP_TASY_USERS WHERE cd_pessoa_fisica = :cd_pessoa_fisica;`
+    const checkUserQuery = `SELECT COUNT(*) AS COUNT FROM FHSL_APP_TASY_USERS WHERE cd_pessoa_fisica = :cd_pessoa_fisica`
     const checkUserResult = await connection.execute(checkUserQuery, { cd_pessoa_fisica });
 
     if (checkUserResult.rows[0].COUNT > 0) {
@@ -752,8 +749,6 @@ async function register(req, res) {
       return res.status(400).json({ message: "Usuário já registrado." });
     }
 
-
-    // Insere o novo usuário na tabela
     const insertUserQuery = `
         INSERT INTO FHSL_APP_TASY_USERS (cd_pessoa_fisica, nm_pessoa_fisica, nm_usuario, ds_senha, ie_reset_senha)
         VALUES (:cd_pessoa_fisica, :nm_completo, :nm_usuario, :nm_usuario,1)
@@ -765,8 +760,53 @@ async function register(req, res) {
       nm_usuario,
     });
 
-    await connection.commit(); // Commit na transação
-    await connection.close(); // Fecha a conexão
+    await connection.commit();
+    await connection.close(); 
+    res.status(201).json({ message: "Usuário registrado com sucesso." });
+  } catch (error) {
+    console.error('Erro ao registrar usuário:', error);
+    res.status(500).json({ message: "Erro interno ao registrar usuário." });
+  }
+}
+
+
+//Função para adicionar usuários no aplicativo do CC
+async function registerAppCC(req, res) {
+  try {
+
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({ message: "Usuário não autenticado." });
+    }
+
+    const { cd_pessoa_fisica, nm_completo, nm_usuario } = req.body;
+
+    if (!cd_pessoa_fisica || !nm_completo || !nm_usuario) {
+      return res.status(400).json({ message: "Todos os campos são obrigatórios." });
+    }
+
+    const connection = await getConnection();
+
+    const checkUserQuery = `SELECT COUNT(*) AS COUNT FROM FHSL_APP_CC_USERS WHERE cd_pessoa_fisica = :cd_pessoa_fisica`
+    const checkUserResult = await connection.execute(checkUserQuery, { cd_pessoa_fisica });
+
+    if (checkUserResult.rows[0].COUNT > 0) {
+      await connection.close();
+      return res.status(400).json({ message: "Usuário já registrado." });
+    }
+
+    const insertUserQuery = `
+        INSERT INTO FHSL_APP_CC_USERS (cd_pessoa_fisica, nm_pessoa_fisica, nm_usuario, ds_senha, ie_reset_senha, dt_criacao, dt_atualizacao)
+        VALUES (:cd_pessoa_fisica, :nm_completo, :nm_usuario, :nm_usuario,1, sysdate, sysdate)
+      `;
+
+    await connection.execute(insertUserQuery, {
+      cd_pessoa_fisica,
+      nm_completo,
+      nm_usuario,
+    });
+
+    await connection.commit();
+    await connection.close();
 
     res.status(201).json({ message: "Usuário registrado com sucesso." });
   } catch (error) {
@@ -784,5 +824,6 @@ module.exports = {
   getUserInfo,
   logout,
   obterEscalasAtivas,
-  register
+  register,
+  registerAppCC
 };

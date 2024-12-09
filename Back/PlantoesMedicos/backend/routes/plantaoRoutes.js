@@ -9,7 +9,8 @@ const {
     finalizarPlantao,
     getUserInfo,
     logout,
-    register
+    register,
+    registerAppCC
 } = require('../controllers/plantaoController.js');
 const {
     getUsers,
@@ -31,6 +32,7 @@ router.get('/userinfo', ensureAuth, getUserInfo);
 router.post('/logout', ensureAuth, logout);
 router.get('/obter_escalas', ensureAuth, obterEscalasAtivas);
 router.post('/register', ensureAuth, register);
+router.post('/registerCC', ensureAuth, registerAppCC);
 router.get('/users', ensureAuth, getUsers);
 router.post('/reset-password', ensureAuth, resetPassword);
 router.get('/getPlantoes', getPlantoes);

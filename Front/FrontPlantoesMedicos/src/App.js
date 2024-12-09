@@ -9,6 +9,7 @@ import Users from './components/users.js';
 import PlantoesAdmin from './components/plantoesAdmin.js';
 import Plantao24 from './components/plantao24.js';
 import PlantoesLista from './components/Plantoes.js';
+import AplicativoCC from './components/AplicativoCC.js'
 const App = () => {
         return (
         <Router>
@@ -23,6 +24,7 @@ const App = () => {
                 <Route path='/plantoesAdmin' element={<PlantoesAdmin/>}/>
                 <Route path='/plantao24' element={<Plantao24/>}/>
                 <Route path="/Plantoes" element={<PlantoesLista/>}/>
+                <Route path='/AplicativoCC' element={<AplicativoCC/>}/>
             </Routes>
         </Router>
     );

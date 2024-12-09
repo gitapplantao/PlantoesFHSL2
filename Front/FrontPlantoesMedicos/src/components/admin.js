@@ -4,6 +4,7 @@ import Header from './header.js';
 import './styles/admin.css';
 import { LuUserPlus2 } from "react-icons/lu";
 import { LuUser2 } from "react-icons/lu";
+import { GiHealthNormal } from "react-icons/gi";
 import { FaRegListAlt } from "react-icons/fa";
 import { useNavigate } from 'react-router-dom';
 import { IoIosCheckmarkCircleOutline } from "react-icons/io";
@@ -36,7 +37,11 @@ return(
     </div>
     <div className='card-admin'  onClick={() => handleNavigation('/registerfhsl')}>
         <LuUserPlus2 className='cad-user'/>
-        <p style={{ fontFamily: 'Arial, sans-serif', fontSize: '14px' }}><strong>Cadastro de usuário</strong></p>
+        <p style={{ fontFamily: 'Arial, sans-serif', fontSize: '14px' }}><strong>Cadastro de usuários</strong></p>
+    </div>
+    <div className='card-admin'  onClick={() => handleNavigation('/AplicativoCC')}>
+        <GiHealthNormal className='cad-user'/>
+        <p style={{ fontFamily: 'Arial, sans-serif', fontSize: '14px', textAlign: 'center' }}><strong>Cadastro de usuários aplicativo CC</strong></p>
     </div>
     <div className='card-admin' onClick={() => handleNavigation('/plantoesAdmin')}> 
         <FaRegListAlt className='cad-user'/>

@@ -365,7 +365,7 @@ function PlantoesLista() {
       <Header />
       <h1>Consulta de Plantões</h1>
 
-      <div className='line-plantao24'></div>
+      <div className='line-plantao24-1'></div>
 
       <div>
         {erro && <p className="msg-erro-plantao24h">{erro}</p>}
