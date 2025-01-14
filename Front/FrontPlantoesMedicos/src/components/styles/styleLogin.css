@@ -283,6 +283,41 @@
   background-color: #258b44;
 }
 
+.container-texto-verso {
+  display: flex;
+  position: absolute;
+  left: 1%;
+  bottom: 1%;
+}
+
+.texto-versao {
+  display: flex;
+}
+
+.container-suporte-login {
+  display: flex;
+  position: absolute;
+  right: 1%;
+  bottom: 1%;
+}
+
+.container-botao-interrogacao {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.container-suporte-texto {
+  display: flex;
+}
+
+.botao-interrogacao {
+  display: flex;
+  font-size: 50px;
+  color: #6cbc84;
+  cursor: pointer;
+}
+
 @media (max-width: 299px) {
   .img-logo {
     width: 200px;

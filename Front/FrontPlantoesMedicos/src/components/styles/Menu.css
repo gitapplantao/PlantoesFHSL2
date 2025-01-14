@@ -16,11 +16,11 @@
   border-radius: 5px;
   background-color: #444;
   flex-direction: column;
-  position: fixed; /* Fixar o menu na posição especificada */
-  top: 100px; /* Posiciona a 20px do topo */
+  position: fixed;
+  top: 100px;
   width: 350px;
   align-items: center;
-  right: 10px; /* Posiciona a 20px do lado direito da tela */
+  right: 10px;
   z-index: 10;
 
 }
@@ -59,4 +59,103 @@
 width: 95%;
 border-bottom: 2px solid #6cbc84;
 border-radius: 2px; 
+}
+
+.modal-suporte {
+  width: 40em;
+  height: 20em;
+  background-color: #444;
+  border-color: #6cbc84;
+  border-style: solid;
+  border-width: 2px;
+  border-radius: 5px;
+  position: fixed;
+  display: flex;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1000;
+}
+
+.dimmer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5); 
+  z-index: 999;
+}
+
+.close-suporte {
+  position: absolute;
+  top: 15px;
+  right: 20px;
+  cursor: pointer;
+  color: #fff;
+  font-size: 20px;
+  transition: 0.4s;
+}
+
+.close-suporte:hover {
+  transition: 0.4s;
+  color: #6cbc84;
+}
+
+.titulo-suporte {
+  width: 40em;
+  height: 20em;
+  display: flex;
+  justify-content: center;
+}
+
+.titulo-suporte-texto {
+  display: flex;
+  font-size: 20px;
+}
+.conteudo-suporte {
+  display: flex;
+  position: absolute;
+  top: 20%;
+  left: 1%;
+}
+
+.conteudo-suporte-texto {
+  display: flex;
+  text-align: justify;
+}
+
+.conteudo-suporte-creditos {
+  display: flex;
+  position: absolute;
+  top: 77%;
+  left: 1%;
+}
+
+.counteudo-creditos-texto {
+  display: flex;
+  text-align: justify;
+}
+
+.logo-suporte {
+  display: flex;
+  position: absolute;
+  width: 15em;
+  height: 5em;
+  left: 66%;
+  top: 75%;
+}
+
+.logo-suporte-img {
+  display: flex;
+  width: 200px;
+}
+
+.line4 {
+width: 40%;
+border-bottom: 2px solid #6cbc84;
+border-radius: 2px;
+display: flex;
+position: absolute; 
+top: 75%
 }

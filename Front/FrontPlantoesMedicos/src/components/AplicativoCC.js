@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import './styles/styleRegister.css';
 import Header from './header.js';
-import api from '../api/config'; // Certifique-se de que o caminho está correto
+import api from '../api/config';
 import logoMin from './styles/img/logo-normal-verde.svg';
 
 const Register = () => {

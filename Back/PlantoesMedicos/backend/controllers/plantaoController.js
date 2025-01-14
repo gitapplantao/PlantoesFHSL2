@@ -194,14 +194,13 @@ async function iniciarPlantao(req, res) {
       await connection.close();
       return res.status(403).json({ message: "Você não tem permissão para iniciar este plantão." })
     }
-    console.log("Comando passado:", checkUserPlantaoCorreto)
 
     const checkPlantaoQuery = `SELECT COUNT(*) AS COUNT FROM MEDICO_PLANTAO WHERE cd_medico = :userId AND dt_final IS NULL`;
     const checkPlantaoResult = await connection.execute(checkPlantaoQuery, { userId });
 
     if (checkPlantaoResult.rows[0].COUNT > 0) {
       await connection.close();
-      return res.status(400).json({ message: "Atenção! Você já tem um plantão iniciado." });
+      return res.status(405).json({ message: "Atenção! Você já tem um plantão iniciado." });
     }
 
     const userQuery = `SELECT ds_senha FROM FHSL_APP_TASY_USERS WHERE cd_pessoa_fisica = :userId`;
@@ -225,16 +224,26 @@ async function iniciarPlantao(req, res) {
       return res.status(400).json({ message: 'Formato de data inválido.' });
     }
 
-    const horas = dtInicio.getHours();
-    const diasDaSemana = ["Domingo", "Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado"];
-    const diaSemana = diasDaSemana[dtInicio.getDay()];
+    const horas = dtInicio.getHours(); //pega as horas do plantão
+    const diasDaSemana = ["Domingo", "Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado"]; //máscara para dias de semana
+    const diaSemana = diasDaSemana[dtInicio.getDay()]; //pegando o dia de semana com base no início do plantão
+    const verificarHoraAtual = new Date(); //cria uma data com base no dia atual do sistema
+    let horaAtual = verificarHoraAtual.getHours(); //pega as horas com base no dia atual do sistema
+    let minutosAtual = verificarHoraAtual.getMinutes(); //pega os minutos com base no dia atual do sistema
+    let diaAtual = verificarHoraAtual.getDate(); //pega a dia criado no verificarHoraAtual
+    let diaPlantao = dtInicio.getDate(); //pega o dia do plantão
 
     console.log(`Dia da semana: ${diaSemana}, Horas ${horas}`)
+    console.log(`Hora atual: ${horaAtual} Minutos atuais: ${minutosAtual} - Dia atual: ${diaAtual} - Dia do plantão: ${diaPlantao}`)
 
     let nr_Seq_tipo_plantao, nr_seq_regra_esp;
 
     switch (tipo_escala) {
+
       case 'CARD': //cirurgia cardiaca
+        if (diaAtual != diaPlantao) { //restrição dia
+          return res.status(406).json({ message: "Plantão sendo iniciado fora do horário da escala." });
+        }
         if (horas >= 0 && horas < 24) {
           nr_Seq_tipo_plantao = 34;
           nr_seq_regra_esp = 35;
@@ -244,6 +253,9 @@ async function iniciarPlantao(req, res) {
         break;
 
       case 'PED': //cirurgia pediatrica
+        if (diaAtual != diaPlantao) { //restrição dia
+          return res.status(406).json({ message: "Plantão sendo iniciado fora do horário da escala." });
+        }
         if (horas >= 0 && horas < 24) {
           nr_Seq_tipo_plantao = 12;
           nr_seq_regra_esp = 30;
@@ -253,6 +265,9 @@ async function iniciarPlantao(req, res) {
         break;
 
       case 'CIRT':
+        if (diaAtual != diaPlantao) { //restrição dia
+          return res.status(406).json({ message: "Plantão sendo iniciado fora do horário da escala." });
+        }
         if (horas >= 0 && horas < 24) {
           nr_Seq_tipo_plantao = 45;
           nr_seq_regra_esp = 46;
@@ -262,6 +277,9 @@ async function iniciarPlantao(req, res) {
         break;
 
       case 'CVAR':
+        if (diaAtual != diaPlantao) { //restrição dia
+          return res.status(406).json({ message: "Plantão sendo iniciado fora do horário da escala." });
+        }
         if (horas >= 0 && horas < 24) {
           nr_Seq_tipo_plantao = 39;
           nr_seq_regra_esp = 40;
@@ -271,6 +289,9 @@ async function iniciarPlantao(req, res) {
         break;
 
       case 'OFT':
+        if (diaAtual != diaPlantao) { //restrição dia
+          return res.status(406).json({ message: "Plantão sendo iniciado fora do horário da escala." });
+        }
         if (horas >= 0 && horas < 24) {
           nr_Seq_tipo_plantao = 37;
           nr_seq_regra_esp = 38;
@@ -280,6 +301,9 @@ async function iniciarPlantao(req, res) {
         break;
 
       case 'AMBC':
+        if (diaAtual != diaPlantao) { //restrição dia
+          return res.status(406).json({ message: "Plantão sendo iniciado fora do horário da escala." });
+        }
         if (horas >= 0 && horas < 24) {
           nr_Seq_tipo_plantao = 55;
           nr_seq_regra_esp = 55;
@@ -289,6 +313,9 @@ async function iniciarPlantao(req, res) {
         break;
 
       case 'OTO':
+        if (diaAtual != diaPlantao) { //restrição dia
+          return res.status(406).json({ message: "Plantão sendo iniciado fora do horário da escala." });
+        }
         if (horas >= 0 && horas < 24) {
           nr_Seq_tipo_plantao = 41;
           nr_seq_regra_esp = 42;
@@ -298,6 +325,9 @@ async function iniciarPlantao(req, res) {
         break;
 
       case 'URO':
+        if (diaAtual != diaPlantao) { //restrição dia
+          return res.status(406).json({ message: "Plantão sendo iniciado fora do horário da escala." });
+        }
         if (horas >= 0 && horas < 24) {
           nr_Seq_tipo_plantao = 35;
           nr_seq_regra_esp = 36;
@@ -306,20 +336,32 @@ async function iniciarPlantao(req, res) {
         }
         break;
 
-      case 'GO1': {
-        if (horas >= 7 && horas < 19) { //diurno
-          if (diaSemana !== "Sábado" && diaSemana !== "Domingo") { //diurno padrão
+      case 'GO1':
+        if (diaAtual != diaPlantao) { // restrição de dia
+          return res.status(406).json({ message: "Plantão sendo iniciado fora do horário da escala." });
+        }
+
+        if (horas >= 7 && horas <= 18) { // diurno padrão
+          if ((horaAtual < 6 || (horaAtual === 6 && minutosAtual < 30)) ||
+            (horaAtual > 7 || (horaAtual === 7 && minutosAtual > 30))) {
+            return res.status(406).json({ message: "Plantão sendo iniciado fora do horário permitido para o diurno (06:30 - 07:30)." });
+          }
+          if (diaSemana !== "Sábado" && diaSemana !== "Domingo") { // diurno padrão
             nr_Seq_tipo_plantao = 29;
             nr_seq_regra_esp = 11;
-          } else { //diurno fim de semana
+          } else { // diurno fim de semana
             nr_Seq_tipo_plantao = 13;
             nr_seq_regra_esp = 13;
           }
-        } else if ((horas >= 19 || horas < 7)) { //noturno
-          if (diaSemana !== "Sábado" && diaSemana !== "Domingo") { //noturno padrão
+        } else if (horas >= 19 || horas < 7) { // noturno
+          if ((horaAtual < 18 || (horaAtual === 18 && minutosAtual < 30)) ||
+            (horaAtual > 19 || (horaAtual === 19 && minutosAtual > 30))) {
+            return res.status(406).json({ message: "Plantão sendo iniciado fora do horário permitido para o noturno (18:30 - 19:30)." });
+          }
+          if (diaSemana !== "Sábado" && diaSemana !== "Domingo") { // noturno padrão
             nr_Seq_tipo_plantao = 20;
             nr_seq_regra_esp = 21;
-          } else { //noturno fim de semana
+          } else { // noturno fim de semana
             nr_Seq_tipo_plantao = 14;
             nr_seq_regra_esp = 12;
           }
@@ -327,31 +369,65 @@ async function iniciarPlantao(req, res) {
           return res.status(400).json({ message: "Horário inválido para o plantão selecionado." });
         }
         break;
-      }
 
       case 'GO2':
-        if (dt_inicio >= 7 && dt_final <= 18 && (diaSemana !== "Sábado" && diaSemana !== "Domingo")) { //diurno padrão
-          nr_Seq_tipo_plantao = 29;
-          nr_seq_regra_esp = 11;
-        } else if (dt_inicio >= 7 && dt_final <= 18 && (diaSemana === "Sábado" || diaSemana === "Domingo")) { //diurno fim de semana
-          nr_Seq_tipo_plantao = 13;
-          nr_seq_regra_esp = 13;
-        } else if (dt_inicio >= 19 || dt_final <= 7) { //noturno
-          nr_Seq_tipo_plantao = 14;
-          nr_seq_regra_esp = 12;
+        if (diaAtual != diaPlantao) { // restrição de dia
+          return res.status(406).json({ message: "Plantão sendo iniciado fora do horário da escala." });
+        }
+
+        if (horas >= 7 && horas <= 18) { // diurno padrão
+          if ((horaAtual < 6 || (horaAtual === 6 && minutosAtual < 30)) ||
+            (horaAtual > 7 || (horaAtual === 7 && minutosAtual > 30))) {
+            return res.status(406).json({ message: "Plantão sendo iniciado fora do horário permitido para o diurno (06:30 - 07:30)." });
+          }
+          if (diaSemana !== "Sábado" && diaSemana !== "Domingo") { // diurno padrão
+            nr_Seq_tipo_plantao = 29;
+            nr_seq_regra_esp = 11;
+          } else { // diurno fim de semana
+            nr_Seq_tipo_plantao = 13;
+            nr_seq_regra_esp = 13;
+          }
+        } else if (horas >= 19 || horas < 7) { // noturno
+          if ((horaAtual < 18 || (horaAtual === 18 && minutosAtual < 30)) ||
+            (horaAtual > 19 || (horaAtual === 19 && minutosAtual > 30))) {
+            return res.status(406).json({ message: "Plantão sendo iniciado fora do horário permitido para o noturno (18:30 - 19:30)." });
+          }
+          if (diaSemana !== "Sábado" && diaSemana !== "Domingo") { // noturno padrão
+            nr_Seq_tipo_plantao = 20;
+            nr_seq_regra_esp = 21;
+          } else { // noturno fim de semana
+            nr_Seq_tipo_plantao = 14;
+            nr_seq_regra_esp = 12;
+          }
         } else {
-          return res.status(400).json({ message: "Erro ao adicionar o plantão" });
+          return res.status(400).json({ message: "Horário inválido para o plantão selecionado." });
         }
         break;
 
-      case 'HKIDS': //plantão médico hkids
-        if (horas >= 7 && horas <= 12) { //manhã
+      case 'HKIDS': //plantão médico HKids apoio
+        if (diaAtual != diaPlantao) { // restrição dia
+          return res.status(406).json({ message: "Plantão sendo iniciado fora do dia da escala." });
+        }
+
+        if (horas >= 7 && horas <= 12) { // manhã
+          if (horaAtual < 6 || (horaAtual === 6 && minutosAtual < 30) || // restrição manhão
+            horaAtual > 7 || (horaAtual === 7 && minutosAtual > 30)) {
+            return res.status(406).json({ message: "Plantão sendo iniciado fora do horário permitido para a manhã (06:30 - 07:30)." });
+          }
           nr_Seq_tipo_plantao = 52;
           nr_seq_regra_esp = 53;
-        } else if (horas >= 13 && horas <= 18) { //tarde
+        } else if (horas >= 13 && horas <= 18) { // tarde
+          if (horaAtual < 12 || (horaAtual === 12 && minutosAtual < 30) || // restrição tarde
+            horaAtual > 13 || (horaAtual === 13 && minutosAtual > 30)) {
+            return res.status(406).json({ message: "Plantão sendo iniciado fora do horário permitido para a tarde (12:30 - 13:30)." });
+          }
           nr_Seq_tipo_plantao = 51;
           nr_seq_regra_esp = 51;
-        } else if (horas >= 19 || horas < 7) { //noite
+        } else if (horas >= 19 || horas < 7) { // noite
+          if (horaAtual < 18 || (horaAtual === 18 && minutosAtual < 30) || // restrição noite
+            horaAtual > 19 || (horaAtual === 19 && minutosAtual > 30)) {
+            return res.status(406).json({ message: "Plantão sendo iniciado fora do horário permitido para a noite (18:30 - 19:30)." });
+          }
           nr_Seq_tipo_plantao = 46;
           nr_seq_regra_esp = 47;
         } else {
@@ -360,13 +436,29 @@ async function iniciarPlantao(req, res) {
         break;
 
       case 'PS1':
-        if (horas >= 7 && horas <= 18 && (diaSemana !== "Sábado" && diaSemana !== "Domingo")) { //diurno padrão
+        if (diaAtual != diaPlantao) { // restrição dia
+          return res.status(406).json({ message: "Plantão sendo iniciado fora do horário da escala." });
+        }
+
+        if ((horas >= 7 && horas <= 18) && (diaSemana !== "Sábado" && diaSemana !== "Domingo")) { // diurno padrão
+          if ((horaAtual < 6 || (horaAtual === 6 && minutosAtual < 30)) || // restrição diurno
+            (horaAtual > 7 || (horaAtual === 7 && minutosAtual > 30))) {
+            return res.status(406).json({ message: "Plantão sendo iniciado fora do horário permitido para o diurno padrão (06:30 - 07:30)." });
+          }
           nr_Seq_tipo_plantao = 24;
           nr_seq_regra_esp = 25;
-        } else if (horas >= 7 && horas <= 18 && (diaSemana === "Sábado" || diaSemana === "Domingo")) { //diurno FDS
+        } else if ((horas >= 7 && horas <= 18) && (diaSemana === "Sábado" || diaSemana === "Domingo")) { // diurno FDS
+          if ((horaAtual < 6 || (horaAtual === 6 && minutosAtual < 30)) ||  // restrição diurno FDS
+            (horaAtual > 7 || (horaAtual === 7 && minutosAtual > 30))) {
+            return res.status(406).json({ message: "Plantão sendo iniciado fora do horário permitido para o diurno no final de semana (06:30 - 07:30)." });
+          }
           nr_Seq_tipo_plantao = 22;
           nr_seq_regra_esp = 24;
-        } else if ((horas >= 19 || horas < 7)) { //noturno
+        } else if ((horas >= 19 || horas < 7)) { // noturno
+          if ((horaAtual < 18 || (horaAtual === 18 && minutosAtual < 30)) || // restrição noite
+            (horaAtual > 19 || (horaAtual === 19 && minutosAtual > 30))) {
+            return res.status(406).json({ message: "Plantão sendo iniciado fora do horário permitido para o noturno (18:30 - 19:30)." });
+          }
           nr_Seq_tipo_plantao = 23;
           nr_seq_regra_esp = 23;
         } else {
@@ -374,15 +466,30 @@ async function iniciarPlantao(req, res) {
         }
         break;
 
-
       case 'PS2':
-        if (horas >= 7 && horas <= 18 && (diaSemana !== "Sábado" && diaSemana !== "Domingo")) { //diurno padrão
+        if (diaAtual != diaPlantao) { // restrição dia
+          return res.status(406).json({ message: "Plantão sendo iniciado fora do horário da escala." });
+        }
+
+        if ((horas >= 7 && horas <= 18) && (diaSemana !== "Sábado" && diaSemana !== "Domingo")) { // diurno padrão
+          if ((horaAtual < 6 || (horaAtual === 6 && minutosAtual < 30)) || // restrição diurno
+            (horaAtual > 7 || (horaAtual === 7 && minutosAtual > 30))) {
+            return res.status(406).json({ message: "Plantão sendo iniciado fora do horário permitido para o diurno padrão (06:30 - 07:30)." });
+          }
           nr_Seq_tipo_plantao = 21;
           nr_seq_regra_esp = 22;
-        } else if (horas >= 7 && horas <= 18 && (diaSemana === "Sábado" || diaSemana === "Domingo")) { //diurno FDS
+        } else if ((horas >= 7 && horas <= 18) && (diaSemana === "Sábado" || diaSemana === "Domingo")) { // diurno FDS
+          if ((horaAtual < 6 || (horaAtual === 6 && minutosAtual < 30)) ||  // restrição diurno FDS
+            (horaAtual > 7 || (horaAtual === 7 && minutosAtual > 30))) {
+            return res.status(406).json({ message: "Plantão sendo iniciado fora do horário permitido para o diurno no final de semana (06:30 - 07:30)." });
+          }
           nr_Seq_tipo_plantao = 25;
           nr_seq_regra_esp = 26;
-        } else if ((horas >= 19 || horas < 7)) { //noturno
+        } else if ((horas >= 19 || horas < 7)) { // noturno
+          if ((horaAtual < 18 || (horaAtual === 18 && minutosAtual < 30)) || // restrição noite
+            (horaAtual > 19 || (horaAtual === 19 && minutosAtual > 30))) {
+            return res.status(406).json({ message: "Plantão sendo iniciado fora do horário permitido para o noturno (18:30 - 19:30)." });
+          }
           nr_Seq_tipo_plantao = 26;
           nr_seq_regra_esp = 27;
         } else {
@@ -390,14 +497,30 @@ async function iniciarPlantao(req, res) {
         }
         break;
 
-      case 'HKP': //apoio pediatria
-        if (horas >= 7 && horas <= 12) { //manhã
+      case 'HKP': //plantão médico HKids
+        if (diaAtual != diaPlantao) { // restrição dia
+          return res.status(406).json({ message: "Plantão sendo iniciado fora do dia da escala." });
+        }
+
+        if (horas >= 7 && horas <= 12) { // manhã
+          if (horaAtual < 6 || (horaAtual === 6 && minutosAtual < 30) || // restrição manhão
+            horaAtual > 7 || (horaAtual === 7 && minutosAtual > 30)) {
+            return res.status(406).json({ message: "Plantão sendo iniciado fora do horário permitido para a manhã (06:30 - 07:30)." });
+          }
           nr_Seq_tipo_plantao = 8;
           nr_seq_regra_esp = 8;
-        } else if (horas >= 13 && horas <= 18) { //tarde
+        } else if (horas >= 13 && horas <= 18) { // tarde
+          if (horaAtual < 12 || (horaAtual === 12 && minutosAtual < 30) || // restrição tarde
+            horaAtual > 13 || (horaAtual === 13 && minutosAtual > 30)) {
+            return res.status(406).json({ message: "Plantão sendo iniciado fora do horário permitido para a tarde (12:30 - 13:30)." });
+          }
           nr_Seq_tipo_plantao = 10;
           nr_seq_regra_esp = 9;
-        } else if ((horas >= 19 || horas < 7)) { //noturno
+        } else if (horas >= 19 || horas < 7) { // noite
+          if (horaAtual < 18 || (horaAtual === 18 && minutosAtual < 30) || // restrição noite
+            horaAtual > 19 || (horaAtual === 19 && minutosAtual > 30)) {
+            return res.status(406).json({ message: "Plantão sendo iniciado fora do horário permitido para a noite (18:30 - 19:30)." });
+          }
           nr_Seq_tipo_plantao = 11;
           nr_seq_regra_esp = 16;
         } else {
@@ -406,13 +529,29 @@ async function iniciarPlantao(req, res) {
         break;
 
       case 'ORTO':
-        if (horas >= 7 && horas <= 12) { //manhã
+        if (diaAtual != diaPlantao) { // restrição dia
+          return res.status(406).json({ message: "Plantão sendo iniciado fora do dia da escala." });
+        }
+
+        if (horas >= 7 && horas <= 12) { // manhã
+          if (horaAtual < 6 || (horaAtual === 6 && minutosAtual < 30) || // restrição manhão
+            horaAtual > 7 || (horaAtual === 7 && minutosAtual > 30)) {
+            return res.status(406).json({ message: "Plantão sendo iniciado fora do horário permitido para a manhã (06:30 - 07:30)." });
+          }
           nr_Seq_tipo_plantao = 18;
           nr_seq_regra_esp = 19;
-        } else if (horas >= 13 && horas <= 18) { //tarde
+        } else if (horas >= 13 && horas <= 18) { // tarde
+          if (horaAtual < 12 || (horaAtual === 12 && minutosAtual < 30) || // restrição tarde
+            horaAtual > 13 || (horaAtual === 13 && minutosAtual > 30)) {
+            return res.status(406).json({ message: "Plantão sendo iniciado fora do horário permitido para a tarde (12:30 - 13:30)." });
+          }
           nr_Seq_tipo_plantao = 17;
           nr_seq_regra_esp = 20;
-        } else if ((horas >= 19 || horas < 7)) { //noturno
+        } else if (horas >= 19 || horas < 7) { // noite
+          if (horaAtual < 18 || (horaAtual === 18 && minutosAtual < 30) || // restrição noite
+            horaAtual > 19 || (horaAtual === 19 && minutosAtual > 30)) {
+            return res.status(406).json({ message: "Plantão sendo iniciado fora do horário permitido para a noite (18:30 - 19:30)." });
+          }
           nr_Seq_tipo_plantao = 19;
           nr_seq_regra_esp = 18;
         } else {
@@ -421,15 +560,29 @@ async function iniciarPlantao(req, res) {
         break;
 
       case 'PART':
-        if (horas >= 7 && horas <= 18) { //diurno
-          if (diaSemana !== "Sábado" && diaSemana !== "Domingo") { //diurno padrão
-            nr_Seq_tipo_plantao = 48;
-            nr_seq_regra_esp = 19;
-          } else { // diurno FDS
-            nr_Seq_tipo_plantao = 16;
-            nr_seq_regra_esp = 17;
+        if (diaAtual != diaPlantao) { // restrição dia
+          return res.status(406).json({ message: "Plantão sendo iniciado fora do horário da escala." });
+        }
+
+        if ((horas >= 7 && horas <= 18) && (diaSemana !== "Sábado" && diaSemana !== "Domingo")) { // diurno padrão
+          if ((horaAtual < 6 || (horaAtual === 6 && minutosAtual < 30)) || // restrição diurno
+            (horaAtual > 7 || (horaAtual === 7 && minutosAtual > 30))) {
+            return res.status(406).json({ message: "Plantão sendo iniciado fora do horário permitido para o périodo diurno (06:30 - 07:30)." });
           }
-        } else if ((horas >= 19 || horas < 7)) { //noturno
+          nr_Seq_tipo_plantao = 48;
+          nr_seq_regra_esp = 19;
+        } else if ((horas >= 7 && horas <= 18) && (diaSemana === "Sábado" || diaSemana === "Domingo")) { // diurno FDS
+          if ((horaAtual < 6 || (horaAtual === 6 && minutosAtual < 30)) ||  // restrição diurno FDS
+            (horaAtual > 7 || (horaAtual === 7 && minutosAtual > 30))) {
+            return res.status(406).json({ message: "Plantão sendo iniciado fora do horário permitido para o périodo diurno (06:30 - 07:30)." });
+          }
+          nr_Seq_tipo_plantao = 16;
+          nr_seq_regra_esp = 17;
+        } else if ((horas >= 19 || horas < 7)) { // noturno
+          if ((horaAtual < 18 || (horaAtual === 18 && minutosAtual < 30)) || // restrição noite
+            (horaAtual > 19 || (horaAtual === 19 && minutosAtual > 30))) {
+            return res.status(406).json({ message: "Plantão sendo iniciado fora do horário permitido para o noturno (18:30 - 19:30)." });
+          }
           nr_Seq_tipo_plantao = 15;
           nr_seq_regra_esp = 10;
         } else {
@@ -438,15 +591,29 @@ async function iniciarPlantao(req, res) {
         break;
 
       case 'UCI':
-        if (horas >= 7 && horas <= 18) {
-          if (diaSemana !== "Sábado" && diaSemana !== "Domingo") { //diurno padrão
-            nr_Seq_tipo_plantao = 47;
-            nr_seq_regra_esp = 47;
-          } else { //diurno FDS
-            nr_Seq_tipo_plantao = 43;
-            nr_seq_regra_esp = 43;
+        if (diaAtual != diaPlantao) { // restrição dia
+          return res.status(406).json({ message: "Plantão sendo iniciado fora do horário da escala." });
+        }
+
+        if ((horas >= 7 && horas <= 18) && (diaSemana !== "Sábado" && diaSemana !== "Domingo")) { // diurno padrão
+          if ((horaAtual < 6 || (horaAtual === 6 && minutosAtual < 30)) || // restrição diurno
+            (horaAtual > 7 || (horaAtual === 7 && minutosAtual > 30))) {
+            return res.status(406).json({ message: "Plantão sendo iniciado fora do horário permitido para o périodo diurno (06:30 - 07:30)." });
           }
-        } else if ((horas >= 19 || horas < 7)) { //noturno
+          nr_Seq_tipo_plantao = 47;
+          nr_seq_regra_esp = 47;
+        } else if ((horas >= 7 && horas <= 18) && (diaSemana === "Sábado" || diaSemana === "Domingo")) { // diurno FDS
+          if ((horaAtual < 6 || (horaAtual === 6 && minutosAtual < 30)) ||  // restrição diurno FDS
+            (horaAtual > 7 || (horaAtual === 7 && minutosAtual > 30))) {
+            return res.status(406).json({ message: "Plantão sendo iniciado fora do horário permitido para o périodo diurno (06:30 - 07:30)." });
+          }
+          nr_Seq_tipo_plantao = 43;
+          nr_seq_regra_esp = 43;
+        } else if ((horas >= 19 || horas < 7)) { // noturno
+          if ((horaAtual < 18 || (horaAtual === 18 && minutosAtual < 30)) || // restrição noite
+            (horaAtual > 19 || (horaAtual === 19 && minutosAtual > 30))) {
+            return res.status(406).json({ message: "Plantão sendo iniciado fora do horário permitido para o noturno (18:30 - 19:30)." });
+          }
           nr_Seq_tipo_plantao = 42;
           nr_seq_regra_esp = 44;
         } else {
@@ -455,10 +622,22 @@ async function iniciarPlantao(req, res) {
         break;
 
       case 'UTIG1':
-        if (horas >= 7 && horas <= 18) { //diurno padrão
+        if (diaAtual != diaPlantao) { // restrição dia
+          return res.status(406).json({ message: "Plantão sendo iniciado fora do horário da escala." });
+        }
+
+        if (horas >= 7 && horas <= 18) { // diurno padrão
+          if ((horaAtual < 6 || (horaAtual === 6 && minutosAtual < 30)) ||
+            (horaAtual > 7 || (horaAtual === 7 && minutosAtual > 30))) {
+            return res.status(406).json({ message: "Plantão sendo iniciado fora do horário permitido para o diurno (06:30 - 07:30)." });
+          }
           nr_Seq_tipo_plantao = 28;
           nr_seq_regra_esp = 28;
-        } else if ((horas >= 19 || horas < 7)) { //noturno
+        } else if (horas >= 19 || horas < 7) { // noturno
+          if ((horaAtual < 18 || (horaAtual === 18 && minutosAtual < 30)) ||
+            (horaAtual > 19 || (horaAtual === 19 && minutosAtual > 30))) {
+            return res.status(406).json({ message: "Plantão sendo iniciado fora do horário permitido para o noturno (18:30 - 19:30)." });
+          }
           nr_Seq_tipo_plantao = 27;
           nr_seq_regra_esp = 29;
         } else {
@@ -467,10 +646,22 @@ async function iniciarPlantao(req, res) {
         break;
 
       case 'UTIG2':
-        if (horas >= 7 && horas <= 18) { //diurno padrão
+        if (diaAtual != diaPlantao) { // restrição dia
+          return res.status(406).json({ message: "Plantão sendo iniciado fora do horário da escala." });
+        }
+
+        if (horas >= 7 && horas <= 18) { // diurno padrão
+          if ((horaAtual < 6 || (horaAtual === 6 && minutosAtual < 30)) ||
+            (horaAtual > 7 || (horaAtual === 7 && minutosAtual > 30))) {
+            return res.status(406).json({ message: "Plantão sendo iniciado fora do horário permitido para o diurno (06:30 - 07:30)." });
+          }
           nr_Seq_tipo_plantao = 28;
           nr_seq_regra_esp = 28;
-        } else if ((horas >= 19 || horas < 7)) { //noturno
+        } else if (horas >= 19 || horas < 7) { // noturno
+          if ((horaAtual < 18 || (horaAtual === 18 && minutosAtual < 30)) ||
+            (horaAtual > 19 || (horaAtual === 19 && minutosAtual > 30))) {
+            return res.status(406).json({ message: "Plantão sendo iniciado fora do horário permitido para o noturno (18:30 - 19:30)." });
+          }
           nr_Seq_tipo_plantao = 27;
           nr_seq_regra_esp = 29;
         } else {
@@ -479,10 +670,22 @@ async function iniciarPlantao(req, res) {
         break;
 
       case 'UTIN':
-        if (horas >= 7 && horas <= 18) { //diurno padrão
+        if (diaAtual != diaPlantao) { // restrição dia
+          return res.status(406).json({ message: "Plantão sendo iniciado fora do horário da escala." });
+        }
+
+        if (horas >= 7 && horas <= 18) { // diurno padrão
+          if ((horaAtual < 6 || (horaAtual === 6 && minutosAtual < 30)) ||
+            (horaAtual > 7 || (horaAtual === 7 && minutosAtual > 30))) {
+            return res.status(406).json({ message: "Plantão sendo iniciado fora do horário permitido para o diurno (06:30 - 07:30)." });
+          }
           nr_Seq_tipo_plantao = 30;
           nr_seq_regra_esp = 31;
-        } else if ((horas >= 19 || horas < 7)) { //noturno
+        } else if (horas >= 19 || horas < 7) { // noturno
+          if ((horaAtual < 18 || (horaAtual === 18 && minutosAtual < 30)) ||
+            (horaAtual > 19 || (horaAtual === 19 && minutosAtual > 30))) {
+            return res.status(406).json({ message: "Plantão sendo iniciado fora do horário permitido para o noturno (18:30 - 19:30)." });
+          }
           nr_Seq_tipo_plantao = 31;
           nr_seq_regra_esp = 32;
         } else {
@@ -491,10 +694,22 @@ async function iniciarPlantao(req, res) {
         break;
 
       case 'UTIP':
-        if (horas >= 7 && horas <= 18) { //diurno padrão
+        if (diaAtual != diaPlantao) { // restrição dia
+          return res.status(406).json({ message: "Plantão sendo iniciado fora do horário da escala." });
+        }
+
+        if (horas >= 7 && horas <= 18) { // diurno padrão
+          if ((horaAtual < 6 || (horaAtual === 6 && minutosAtual < 30)) ||
+            (horaAtual > 7 || (horaAtual === 7 && minutosAtual > 30))) {
+            return res.status(406).json({ message: "Plantão sendo iniciado fora do horário permitido para o diurno (06:30 - 07:30)." });
+          }
           nr_Seq_tipo_plantao = 32;
           nr_seq_regra_esp = 33;
-        } else if ((horas >= 19 || horas < 7)) { //noturno
+        } else if (horas >= 19 || horas < 7) { // noturno
+          if ((horaAtual < 18 || (horaAtual === 18 && minutosAtual < 30)) ||
+            (horaAtual > 19 || (horaAtual === 19 && minutosAtual > 30))) {
+            return res.status(406).json({ message: "Plantão sendo iniciado fora do horário permitido para o noturno (18:30 - 19:30)." });
+          }
           nr_Seq_tipo_plantao = 33;
           nr_seq_regra_esp = 34;
         } else {
@@ -503,10 +718,22 @@ async function iniciarPlantao(req, res) {
         break;
 
       case 'CAD':
-        if (horas >= 7 && horas <= 18) { //diurno
+        if (diaAtual != diaPlantao) { // restrição dia
+          return res.status(406).json({ message: "Plantão sendo iniciado fora do horário da escala." });
+        }
+
+        if (horas >= 7 && horas <= 18) { // diurno padrão
+          if ((horaAtual < 6 || (horaAtual === 6 && minutosAtual < 30)) ||
+            (horaAtual > 7 || (horaAtual === 7 && minutosAtual > 30))) {
+            return res.status(406).json({ message: "Plantão sendo iniciado fora do horário permitido para o diurno (06:30 - 07:30)." });
+          }
           nr_Seq_tipo_plantao = 56;
           nr_seq_regra_esp = 56;
-        } else if ((horas >= 19 || horas < 7)) { //noturno
+        } else if (horas >= 19 || horas < 7) { // noturno
+          if ((horaAtual < 18 || (horaAtual === 18 && minutosAtual < 30)) ||
+            (horaAtual > 19 || (horaAtual === 19 && minutosAtual > 30))) {
+            return res.status(406).json({ message: "Plantão sendo iniciado fora do horário permitido para o noturno (18:30 - 19:30)." });
+          }
           nr_Seq_tipo_plantao = 54;
           nr_seq_regra_esp = 54;
         } else {
@@ -601,9 +828,9 @@ async function iniciarPlantao(req, res) {
 
 
 async function finalizarPlantao(req, res) {
-  const { plantaoId, password } = req.body;
+  const { plantaoId, password, dt_inicio, tipo_escala } = req.body;
 
-  if (!req.user || !req.user.id || !password) {
+  if (!req.user || !req.user.id || !password || !dt_inicio || !tipo_escala) {
     return res.status(401).json({ message: "Parâmetros necessários ausentes" });
   }
 
@@ -631,6 +858,157 @@ async function finalizarPlantao(req, res) {
     if (!isPasswordMatch) {
       await connection.close();
       return res.status(401).json({ message: "Senha incorreta." });
+    }
+
+    const dtInicio = new Date(dt_inicio.replace(/(\d{2})\/(\d{2})\/(\d{4})/, "$3-$2-$1"));
+    if (isNaN(dtInicio.getTime())) {
+      console.error(`Formato de data inválido: ${dt_inicio}`);
+      return res.status(400).json({ message: 'Formato de data inválido.' });
+    }
+
+    const horas = dtInicio.getHours(); //pega as horas do plantão
+    const verificarHoraAtual = new Date(); //cria uma data com base no dia atual do sistema
+    let horaAtual = verificarHoraAtual.getHours(); //pega as horas com base no dia atual do sistema
+    let diaAtual = verificarHoraAtual.getDate(); //pega a dia criado no verificarHoraAtual
+    let diaPlantao = dtInicio.getDate(); //pega o dia do plantão
+    const diaAnterior = new Date(verificarHoraAtual);
+    diaAnterior.setDate(diaAtual - 1);
+    let diaAnteriorNumero = diaAnterior.getDate();
+
+    switch (tipo_escala) {
+      case 'CARD':
+        if (diaAtual != diaPlantao && diaPlantao != diaAnteriorNumero) {
+          return res.status(406).json({ message: "Plantão sendo finalizado fora do horário da escala." });
+        }
+        break;
+
+      case 'PED':
+        if (diaAtual != diaPlantao && diaPlantao != diaAnteriorNumero) {
+          return res.status(406).json({ message: "Plantão sendo finalizado fora do horário da escala." });
+        }
+        break;
+
+      case 'CIRT':
+        if (diaAtual != diaPlantao && diaPlantao != diaAnteriorNumero) {
+          return res.status(406).json({ message: "Plantão sendo finalizado fora do horário da escala." });
+        }
+        break;
+
+      case 'CVAR':
+        if (diaAtual != diaPlantao && diaPlantao != diaAnteriorNumero) {
+          return res.status(406).json({ message: "Plantão sendo finalizado fora do horário da escala." });
+        }
+        break;
+
+      case 'OFT':
+        if (diaAtual != diaPlantao && diaPlantao != diaAnteriorNumero) {
+          return res.status(406).json({ message: "Plantão sendo finalizado fora do horário da escala." });
+        }
+        break;
+
+      case 'AMBC':
+        if (diaAtual != diaPlantao && diaPlantao != diaAnteriorNumero) {
+          return res.status(406).json({ message: "Plantão sendo finalizado fora do horário da escala." });
+        }
+        break;
+
+      case 'OTO':
+        if (diaAtual != diaPlantao && diaPlantao != diaAnteriorNumero) {
+          return res.status(406).json({ message: "Plantão sendo finalizado fora do horário da escala." });
+        }
+        break;
+
+      case 'URO':
+        if (diaAtual != diaPlantao && diaPlantao != diaAnteriorNumero) {
+          return res.status(406).json({ message: "Plantão sendo finalizado fora do horário da escala." });
+        }
+        break;
+
+      case 'GO1':
+        if (diaAtual != diaPlantao && diaPlantao != diaAnteriorNumero) {
+          return res.status(406).json({ message: "Plantão sendo finalizado fora do horário da escala." });
+        }
+        break;
+
+      case 'GO2':
+        if (diaAtual != diaPlantao && diaPlantao != diaAnteriorNumero) {
+          return res.status(406).json({ message: "Plantão sendo finalizado fora do horário da escala." });
+        }
+        break;
+
+      case 'HKIDS':
+        if (diaAtual != diaPlantao && diaPlantao != diaAnteriorNumero) {
+          return res.status(406).json({ message: "Plantão sendo finalizado fora do horário da escala." });
+        }
+        break;
+
+      case 'PS1':
+        if (diaAtual != diaPlantao && diaPlantao != diaAnteriorNumero) {
+          return res.status(406).json({ message: "Plantão sendo finalizado fora do horário da escala." });
+        }
+        break;
+
+      case 'PS2':
+        if (diaAtual != diaPlantao && diaPlantao != diaAnteriorNumero) {
+          return res.status(406).json({ message: "Plantão sendo finalizado fora do horário da escala." });
+        }
+        break;
+
+      case 'HKP':
+        if (diaAtual != diaPlantao && diaPlantao != diaAnteriorNumero) {
+          return res.status(406).json({ message: "Plantão sendo finalizado fora do horário da escala." });
+        }
+        break;
+
+      case 'ORTO':
+        if (diaAtual != diaPlantao && diaPlantao != diaAnteriorNumero) {
+          return res.status(406).json({ message: "Plantão sendo finalizado fora do horário da escala." });
+        }
+        break;
+
+      case 'PART':
+        if (diaAtual != diaPlantao && diaPlantao != diaAnteriorNumero) {
+          return res.status(406).json({ message: "Plantão sendo finalizado fora do horário da escala." });
+        }
+        break;
+
+      case 'UCI':
+        if (diaAtual != diaPlantao && diaPlantao != diaAnteriorNumero) {
+          return res.status(406).json({ message: "Plantão sendo finalizado fora do horário da escala." });
+        }
+        break;
+
+      case 'UTIG1':
+        if (diaAtual != diaPlantao && diaPlantao != diaAnteriorNumero) {
+          return res.status(406).json({ message: "Plantão sendo finalizado fora do horário da escala." });
+        }
+        break;
+
+      case 'UTIG2':
+        if (diaAtual != diaPlantao && diaPlantao != diaAnteriorNumero) {
+          return res.status(406).json({ message: "Plantão sendo finalizado fora do horário da escala." });
+        }
+        break;
+
+      case 'UTIN':
+        if (diaAtual != diaPlantao && diaPlantao != diaAnteriorNumero) {
+          return res.status(406).json({ message: "Plantão sendo finalizado fora do horário da escala." });
+        }
+        break;
+
+      case 'UTIP':
+        if (diaAtual != diaPlantao && diaPlantao != diaAnteriorNumero) {
+          return res.status(406).json({ message: "Plantão sendo finalizado fora do horário da escala." });
+        }
+        break;
+
+      case 'CAD':
+        if (diaAtual != diaPlantao && diaPlantao != diaAnteriorNumero) {
+          return res.status(406).json({ message: "Plantão sendo finalizado fora do horário da escala." });
+        }
+        break;
+      default:
+        return res.status(400).json({ message: "Tipo de escala inválido" })
     }
 
     //não é o jeito que queria fazer, mas deu certo
@@ -761,7 +1139,7 @@ async function register(req, res) {
     });
 
     await connection.commit();
-    await connection.close(); 
+    await connection.close();
     res.status(201).json({ message: "Usuário registrado com sucesso." });
   } catch (error) {
     console.error('Erro ao registrar usuário:', error);

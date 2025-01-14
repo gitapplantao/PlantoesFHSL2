@@ -26,6 +26,9 @@ function PlantoesLista() {
   const modalRef = useRef(null)
   const [plantaoAtual, setPlantaoAtual] = useState(null);
   const [plantaoVerificar, setPlantaoVerificar] = useState(false);
+  const [plantaoHorario, setPlantaoHorario] = useState(false);
+  const [plantaoFinal, setPromptPlantaoFinal] = useState(false);
+  const [plantaoMultiplos, setPlantaoMultiplos] = useState(false);
 
   
   const handleRadioChange = (event) => {
@@ -241,6 +244,8 @@ function PlantoesLista() {
       setPassword('');
       setPasswordError(false);
       setPlantaoVerificar(false);
+      setPlantaoHorario(false);
+      setPlantaoMultiplos(false);
       setSelectedPlantao(null);
       setPlantaoAtual(null);
     } catch (error) {
@@ -251,16 +256,42 @@ function PlantoesLista() {
         console.error('Erro ao confirmar plantão:', error);
         setErro('Erro ao confirmar plantão.');
       }
+      if (error.response && error.response.status === 405) {
+        setPlantaoMultiplos(true);
+        alert("Você já tem um plantão ativo. Não é possível iniciar um novo.");
+      }
       if (error.response && error.response.status === 401) {
         setPasswordError(true);
       }
       if (error.response && error.response.status === 403) {
         setPlantaoVerificar(true);
       }
+      if (error.response && error.response.status === 406) {
+        setPlantaoHorario(true);
+      }
     }
   };
-
   const finalizarPlantao = async (plantao) => {
+    if (!plantaoAtual) {
+      console.error('Erro: Nenhum plantão foi selecionado.');
+      return;
+    }
+
+    const convertToCustomFormat = (dateString) => {
+      const formatString = 'dd/MM/yyyy HH:mm:ss';
+      if (!dateString) {
+        console.error('Erro: dateString está vazio ou indefinido.');
+        return null;
+      }
+      try {
+        const parsedDate = parse(dateString, formatString, new Date());
+        return isValid(parsedDate) ? format(parsedDate, formatString) : null;
+      } catch (error) {
+        console.error('Erro ao converter data:', error);
+        return null;
+      }
+    };
+    
 
     try {
 
@@ -271,9 +302,12 @@ function PlantoesLista() {
 
       const token = sessionStorage.getItem("token");
       const plantaoId = plantaoAtual.NR_SEQUENCIA;
+      const dt_inicioFormatted = convertToCustomFormat(plantaoAtual.dt_inicio);
 
       const requestBody = {
         plantaoId,
+        tipo_escala: plantaoAtual.tipo_escala,
+        dt_inicio: dt_inicioFormatted,
         password
       };
 
@@ -291,6 +325,8 @@ function PlantoesLista() {
       setPlantoesPromptFinalizar(false);
       setPassword("");
       setPlantaoVerificar(false);
+      setPlantaoHorario(false);
+      setPromptPlantaoFinal(false);
       setPasswordError(false);
     } catch (error) {
       if (error.response) {
@@ -299,6 +335,9 @@ function PlantoesLista() {
       }
       if (error.response && error.response.status === 401) {
         setPasswordError(true);
+      }
+      if (error.response && error.response.status === 406) {
+        setPromptPlantaoFinal(true);
       } else {
         console.error("Erro ao finalizar plantão:", error);
         setErro("Erro ao finalizar plantão.");
@@ -685,6 +724,8 @@ function PlantoesLista() {
                 }} />
               {passwordError && (<div className="error-message"> Senha incorreta. </div>)}
               {plantaoVerificar && (<div className="permissao-plantao-mensagem"> Você não tem permissão para iniciar este plantão. </div>)}
+              {plantaoHorario && (<div className="permissao-plantao-mensagem"> Você não pode iniciar um plantão fora do horário da escala. </div>)}
+              {plantaoMultiplos && (<div className="permissao-plantao-mensagem"> Atenção! Você já tem um plantão iniciado. </div>)}
             </div>
             <button className="confirm-button-plantoes" onClick={handleSubmitPlantao}>Confirmar</button>
           </div>
@@ -710,6 +751,8 @@ function PlantoesLista() {
                 }} />
               {passwordError && (<div className="error-message"> Senha incorreta. </div>)}
               {plantaoVerificar && (<div className="permissao-plantao-mensagem"> Você não tem permissão para terminar este plantão. </div>)}
+              {plantaoHorario && (<div className="permissao-plantao-mensagem"> Você não pode finalizar um plantão fora do horário escala. </div>)}
+              {plantaoFinal && (<div className="permissao-plantao-mensagem"> Você não pode finalizar um plantão fora do horário da escala. </div>)}
             </div>
             <button className="confirm-button-plantoes" onClick={finalizarPlantao}> Confirmar </button>
           </div>
