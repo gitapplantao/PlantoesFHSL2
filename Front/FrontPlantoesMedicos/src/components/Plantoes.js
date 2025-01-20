@@ -3,6 +3,7 @@ import { format, parseISO, parse, isValid } from 'date-fns';
 import './styles/plantoesRefeito.css';
 import Header from './header';
 import api from '../api/config';
+import { createRoutesFromChildren } from 'react-router-dom';
 
 function PlantoesLista() {
   const [plantoes, setPlantoes] = useState([]);
@@ -750,7 +751,7 @@ function PlantoesLista() {
                   }
                 }} />
               {passwordError && (<div className="error-message"> Senha incorreta. </div>)}
-              {plantaoVerificar && (<div className="permissao-plantao-mensagem"> Você não tem permissão para terminar este plantão. </div>)}
+              {plantaoVerificar && (<div className="permissao-plantao-mensagem"> Você não tem permissão para finalizar este plantão. </div>)}
               {plantaoHorario && (<div className="permissao-plantao-mensagem"> Você não pode finalizar um plantão fora do horário escala. </div>)}
               {plantaoFinal && (<div className="permissao-plantao-mensagem"> Você não pode finalizar um plantão fora do horário da escala. </div>)}
             </div>

@@ -356,3 +356,13 @@ input[type="date"] {
   background-color: #444;
   color: white;
 }
+
+@media (max-width: 480px) {
+  .menu-plantoes {
+      width: 20em;
+  }
+  
+  .plantao-card {
+      width: 20em;
+  }
+  }

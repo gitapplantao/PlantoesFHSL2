@@ -97,7 +97,7 @@ const Login = () => {
   return (
     <div className='container-login'>
       <div className='container-texto-verso'>
-        <p className='texto-versao'>Versão 2.5.2</p>
+        <p className='texto-versao'>Versão 2.5.4</p>
       </div>
       <div className="login-wrapper">
         <img src={logo} className='img-logo' alt="Logo" />
@@ -161,29 +161,29 @@ const Login = () => {
         </div>
       </div>
       {promptSuporte && (
-        <div className='dimmer'>
-          <div className='modal-suporte'>
-            <div className='titulo-suporte'>
-              <strong><p className='titulo-suporte-texto'>Gestor de Plantões FHSL</p></strong>
+        <div className='dimmer-login'>
+          <div className='modal-suporte-login'>
+            <div className='titulo-suporte-login'>
+              <strong><p className='titulo-suporte-texto-login'>Gestor de Plantões FHSL</p></strong>
             </div>
-            <div className='conteudo-suporte'>
-              <p className='conteudo-suporte-texto'>Caso surja a necessidade de suporte como acesso remoto ou orientação de como usar o aplicativo, é possível entrar em
+            <div className='conteudo-suporte-login'>
+              <p className='conteudo-suporte-texto-login'>Caso surja a necessidade de suporte como acesso remoto ou orientação de como usar o aplicativo, é possível entrar em
                 contato com o setor de TI durante os horários de atendimento: <br /> <br />Ramal 2484 | 08:00 - 12:00 e 13:00 - 17:00<br /> <br />
                 Qualquer suporte fora do atendimento deve ser redirecionado para o plantão da TI.<br />
               </p>
             </div>
-            <div className='conteudo-suporte-creditos'>
-              <strong><p className='conteudo-creditos-texto'>Criado pela Equipe de Desenvolvimento do<br />Hospital São Lucas</p></strong>
-            </div>
-            <div className="line4"></div>
-            <div className='logo-suporte'>
+            <div className='logo-suporte-login'>
               <img
                 src={logo}
-                className='logo-suporte-img'
+                className='logo-suporte-img-login'
                 alt="Logo"
               />
             </div>
-            <strong><span className="close-suporte" onClick={() => setSuportePrompt(false)}>&times;</span></strong>
+            <div className='conteudo-suporte-creditos-login'>
+              <strong><p className='conteudo-creditos-texto-login'>Criado pela Equipe de Desenvolvimento do<br />Hospital São Lucas</p></strong>
+            </div>
+            <div className="line5"></div>
+            <strong><span className="close-suporte-login" onClick={() => setSuportePrompt(false)}>&times;</span></strong>
           </div>
         </div>
       )}

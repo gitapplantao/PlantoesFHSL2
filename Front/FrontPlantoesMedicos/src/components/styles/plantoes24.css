@@ -260,3 +260,13 @@ input[type="checkbox"] {
     border-color: #6cbc84;
     translate: 0 -10px;
 }
+
+@media (max-width: 480px) {
+.menu-plantoes {
+    width: 20em;
+}
+
+.plantao-card {
+    width: 20em;
+}
+}
