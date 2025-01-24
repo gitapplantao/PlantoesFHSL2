@@ -97,7 +97,7 @@ const Login = () => {
   return (
     <div className='container-login'>
       <div className='container-texto-verso'>
-        <p className='texto-versao'>Versão 2.5.4</p>
+        <p className='texto-versao'>Versão 2.5.6</p>
       </div>
       <div className="login-wrapper">
         <img src={logo} className='img-logo' alt="Logo" />

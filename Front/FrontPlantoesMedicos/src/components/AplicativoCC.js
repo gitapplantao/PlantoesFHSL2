@@ -3,7 +3,6 @@ import './styles/styleRegister.css';
 import Header from './header.js';
 import api from '../api/config';
 import logoMin from './styles/img/logo-normal-verde.svg';
-import macacoPensante from './styles/img/macacoPensante.svg';
 import { IoSearchOutline } from 'react-icons/io5';
 import { CgClose } from 'react-icons/cg';
 

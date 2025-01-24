@@ -224,14 +224,21 @@ async function iniciarPlantao(req, res) {
       return res.status(400).json({ message: 'Formato de data inválido.' });
     }
 
-    const horas = dtInicio.getHours(); //pega as horas do plantão
-    const diasDaSemana = ["Domingo", "Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado"]; //máscara para dias de semana
-    const diaSemana = diasDaSemana[dtInicio.getDay()]; //pegando o dia de semana com base no início do plantão
-    const verificarHoraAtual = new Date(); //cria uma data com base no dia atual do sistema
-    let horaAtual = verificarHoraAtual.getHours(); //pega as horas com base no dia atual do sistema
-    let minutosAtual = verificarHoraAtual.getMinutes(); //pega os minutos com base no dia atual do sistema
-    let diaAtual = verificarHoraAtual.getDate(); //pega a dia criado no verificarHoraAtual
-    let diaPlantao = dtInicio.getDate(); //pega o dia do plantão
+    const dtFinal = new Date(dt_final.replace(/(\d{2})\/(\d{2})\/(\d{4})/, "$3-$2-$1"));
+    if (isNaN(dtFinal.getTime())) {
+      console.error(`Formato de data inválido: ${dt_final}`);
+      return res.status(400).json({ message: 'Formato de data inválido' });
+    }
+
+    const horas = dtInicio.getHours(); // pega as horas de início do plantão
+    const horasFinal = dtFinal.getHours(); // pega as horas finais do plantão
+    const diasDaSemana = ["Domingo", "Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado"]; // máscara para dias de semana
+    const diaSemana = diasDaSemana[dtInicio.getDay()]; // pegando o dia de semana com base no início do plantão
+    const verificarHoraAtual = new Date(); // cria uma data com base no dia atual do sistema
+    let horaAtual = verificarHoraAtual.getHours(); // pega as horas com base no dia atual do sistema
+    let minutosAtual = verificarHoraAtual.getMinutes(); // pega os minutos com base no dia atual do sistema
+    let diaAtual = verificarHoraAtual.getDate(); // pega a dia criado no verificarHoraAtual
+    let diaPlantao = dtInicio.getDate(); // pega o dia do plantão
 
     console.log(`Dia da semana: ${diaSemana}, Horas ${horas}`)
     console.log(`Hora atual: ${horaAtual} Minutos atuais: ${minutosAtual} - Dia atual: ${diaAtual} - Dia do plantão: ${diaPlantao}`)
@@ -336,45 +343,45 @@ async function iniciarPlantao(req, res) {
         }
         break;
 
-        case 'GO1':
-          if (diaAtual != diaPlantao) { // restrição dia
-            return res.status(406).json({ message: "Plantão sendo iniciado fora do horário da escala." });
+      case 'GO1':
+        if (diaAtual != diaPlantao) { // restrição dia
+          return res.status(406).json({ message: "Plantão sendo iniciado fora do horário da escala." });
+        }
+
+        if ((horas >= 7 && horas <= 18) && (diaSemana !== "Sábado" && diaSemana !== "Domingo")) { // diurno padrão
+          if (((horaAtual < 6 || (horaAtual === 6 && minutosAtual < 30)) || // restrição diurno padrão
+            (horaAtual > 7 || (horaAtual === 7 && minutosAtual > 30))) &&
+            ((horaAtual < 12 || (horaAtual === 12 && minutosAtual < 30)) || // restrição diurno 12:30-13:30
+              (horaAtual > 13 || (horaAtual === 13 && minutosAtual > 30)))) {
+            return res.status(406).json({ message: "Plantão sendo iniciado fora do horário permitido para o diurno padrão (06:30 - 07:30 ou 12:30 - 13:30)." });
           }
-  
-          if ((horas >= 7 && horas <= 18) && (diaSemana !== "Sábado" && diaSemana !== "Domingo")) { // diurno padrão
-            if (((horaAtual < 6 || (horaAtual === 6 && minutosAtual < 30)) || // restrição diurno padrão
-              (horaAtual > 7 || (horaAtual === 7 && minutosAtual > 30))) &&
-              ((horaAtual < 12 || (horaAtual === 12 && minutosAtual < 30)) || // restrição diurno 12:30-13:30
-                (horaAtual > 13 || (horaAtual === 13 && minutosAtual > 30)))) {
-              return res.status(406).json({ message: "Plantão sendo iniciado fora do horário permitido para o diurno padrão (06:30 - 07:30 ou 12:30 - 13:30)." });
-            }
-            nr_Seq_tipo_plantao = 29;
-            nr_seq_regra_esp = 11;
-          } else if ((horas >= 7 && horas <= 18) && (diaSemana === "Sábado" || diaSemana === "Domingo")) { // diurno FDS
-            if (((horaAtual < 6 || (horaAtual === 6 && minutosAtual < 30)) || // restrição diurno FDS
-              (horaAtual > 7 || (horaAtual === 7 && minutosAtual > 30))) &&
-              ((horaAtual < 12 || (horaAtual === 12 && minutosAtual < 30)) || // restrição diurno FDS 12:30-13:30
-                (horaAtual > 13 || (horaAtual === 13 && minutosAtual > 30)))) {
-              return res.status(406).json({ message: "Plantão sendo iniciado fora do horário permitido para o diurno no final de semana (06:30 - 07:30 ou 13:00 - 13:30)." });
-            }
-            nr_Seq_tipo_plantao = 13;
-            nr_seq_regra_esp = 13;
-          } else if ((horas >= 19 || horas < 7) && (diaSemana !== "Sábado" && diaSemana !== "Domingo")) { // noturno padrão
-            if ((horaAtual < 18 || (horaAtual === 18 && minutosAtual < 30)) || // restrição noturno
-              (horaAtual > 19 || (horaAtual === 19 && minutosAtual > 30)))
-              return res.status(406).json({ message: "Plantão sendo iniciado fora do horário permitido. (18:30 - 19:30)" })
-            nr_Seq_tipo_plantao = 20;
-            nr_seq_regra_esp = 21;
-          } else if ((horas >= 19 || horas < 7) && (diaSemana === "Sábado" && diaSemana === "Domingo")) { //noturno FDS
-            if ((horaAtual < 18 || (horaAtual === 18 && minutosAtual < 30)) || // restriçao noturno FDS
-              (horaAtual > 19 || (horaAtual === 19 && minutosAtual > 30)))
-              return res.status(406).json({ message: "Plantão sendo iniciado fora do horário permitido. (18:30 - 19:30)" })
-            nr_Seq_tipo_plantao = 14;
-            nr_seq_regra_esp = 12;
-          } else {
-            return res.status(400).json({ message: "Horário inválido para o plantão selecionado." });
+          nr_Seq_tipo_plantao = 29;
+          nr_seq_regra_esp = 11;
+        } else if ((horas >= 7 && horas <= 18) && (diaSemana === "Sábado" || diaSemana === "Domingo")) { // diurno FDS
+          if (((horaAtual < 6 || (horaAtual === 6 && minutosAtual < 30)) || // restrição diurno FDS
+            (horaAtual > 7 || (horaAtual === 7 && minutosAtual > 30))) &&
+            ((horaAtual < 12 || (horaAtual === 12 && minutosAtual < 30)) || // restrição diurno FDS 12:30-13:30
+              (horaAtual > 13 || (horaAtual === 13 && minutosAtual > 30)))) {
+            return res.status(406).json({ message: "Plantão sendo iniciado fora do horário permitido para o diurno no final de semana (06:30 - 07:30 ou 13:00 - 13:30)." });
           }
-          break;
+          nr_Seq_tipo_plantao = 13;
+          nr_seq_regra_esp = 13;
+        } else if ((horas >= 19 || horas < 7) && (diaSemana !== "Sábado" && diaSemana !== "Domingo")) { // noturno padrão
+          if ((horaAtual < 18 || (horaAtual === 18 && minutosAtual < 30)) || // restrição noturno
+            (horaAtual > 19 || (horaAtual === 19 && minutosAtual > 30)))
+            return res.status(406).json({ message: "Plantão sendo iniciado fora do horário permitido. (18:30 - 19:30)" })
+          nr_Seq_tipo_plantao = 20;
+          nr_seq_regra_esp = 21;
+        } else if ((horas >= 19 || horas < 7) && (diaSemana === "Sábado" && diaSemana === "Domingo")) { //noturno FDS
+          if ((horaAtual < 18 || (horaAtual === 18 && minutosAtual < 30)) || // restriçao noturno FDS
+            (horaAtual > 19 || (horaAtual === 19 && minutosAtual > 30)))
+            return res.status(406).json({ message: "Plantão sendo iniciado fora do horário permitido. (18:30 - 19:30)" })
+          nr_Seq_tipo_plantao = 14;
+          nr_seq_regra_esp = 12;
+        } else {
+          return res.status(400).json({ message: "Horário inválido para o plantão selecionado." });
+        }
+        break;
 
       case 'GO2':
         if (diaAtual != diaPlantao) { // restrição dia
@@ -865,9 +872,9 @@ async function iniciarPlantao(req, res) {
 
 
 async function finalizarPlantao(req, res) {
-  const { plantaoId, password, dt_inicio, tipo_escala } = req.body;
+  const { plantaoId, password, dt_inicio, dt_final, tipo_escala } = req.body;
 
-  if (!req.user || !req.user.id || !password || !dt_inicio || !tipo_escala) {
+  if (!req.user || !req.user.id || !password || !dt_inicio || !dt_final || !tipo_escala) {
     return res.status(401).json({ message: "Parâmetros necessários ausentes" });
   }
 
@@ -897,156 +904,158 @@ async function finalizarPlantao(req, res) {
       return res.status(401).json({ message: "Senha incorreta." });
     }
 
-    const dtInicio = new Date(dt_inicio.replace(/(\d{2})\/(\d{2})\/(\d{4})/, "$3-$2-$1"));
-    if (isNaN(dtInicio.getTime())) {
-      console.error(`Formato de data inválido: ${dt_inicio}`);
-      return res.status(400).json({ message: 'Formato de data inválido.' });
+    const dtFinal = new Date(dt_final.replace(/(\d{2})\/(\d{2})\/(\d{4})/, "$3-$2-$1"));
+    if (isNaN(dtFinal.getTime())) {
+      console.error(`Formato de data inválido: ${dt_final}`);
+      return res.status(400).json({ message: 'Formato de data inválido' });
     }
 
-    const horas = dtInicio.getHours(); //pega as horas do plantão
-    const verificarHoraAtual = new Date(); //cria uma data com base no dia atual do sistema
-    let horaAtual = verificarHoraAtual.getHours(); //pega as horas com base no dia atual do sistema
-    let diaAtual = verificarHoraAtual.getDate(); //pega a dia criado no verificarHoraAtual
-    let diaPlantao = dtInicio.getDate(); //pega o dia do plantão
-    const diaAnterior = new Date(verificarHoraAtual);
-    diaAnterior.setDate(diaAtual - 1);
-    let diaAnteriorNumero = diaAnterior.getDate();
+    const dataHoraAtual = new Date();
+    let horaAtual = dataHoraAtual.getHours(); //pega as horas com base no dia atual do sistema
+    const horaFinal = dtFinal.getHours();
+    const dataHoraComparar = new Date(dataHoraAtual);
+    dataHoraComparar.setMinutes(0,0,0);
+    dataHoraComparar.setHours(dtFinal.getHours() + 2);
 
+    console.log(`Hora atual do sistema: ${horaAtual}`)
+    console.log(`Hora final do plantão +2: ${dataHoraComparar.getHours()}`)
     switch (tipo_escala) {
       case 'CARD':
-        if (diaAtual != diaPlantao && diaPlantao != diaAnteriorNumero) {
+        if (horaAtual >= dataHoraComparar.getHours()) {
           return res.status(406).json({ message: "Plantão sendo finalizado fora do horário da escala." });
         }
         break;
 
       case 'PED':
-        if (diaAtual != diaPlantao && diaPlantao != diaAnteriorNumero) {
+        if (horaAtual >= dataHoraComparar.getHours()) {
           return res.status(406).json({ message: "Plantão sendo finalizado fora do horário da escala." });
         }
         break;
 
       case 'CIRT':
-        if (diaAtual != diaPlantao && diaPlantao != diaAnteriorNumero) {
+        if (horaAtual >= dataHoraComparar.getHours()) {
           return res.status(406).json({ message: "Plantão sendo finalizado fora do horário da escala." });
         }
         break;
 
       case 'CVAR':
-        if (diaAtual != diaPlantao && diaPlantao != diaAnteriorNumero) {
+        if (horaAtual >= dataHoraComparar.getHours()) {
           return res.status(406).json({ message: "Plantão sendo finalizado fora do horário da escala." });
         }
         break;
 
       case 'OFT':
-        if (diaAtual != diaPlantao && diaPlantao != diaAnteriorNumero) {
+        if (horaAtual >= dataHoraComparar.getHours()) {
           return res.status(406).json({ message: "Plantão sendo finalizado fora do horário da escala." });
         }
         break;
 
       case 'AMBC':
-        if (diaAtual != diaPlantao && diaPlantao != diaAnteriorNumero) {
+        if (horaAtual >= dataHoraComparar.getHours()) {
           return res.status(406).json({ message: "Plantão sendo finalizado fora do horário da escala." });
         }
         break;
 
       case 'OTO':
-        if (diaAtual != diaPlantao && diaPlantao != diaAnteriorNumero) {
+        if (horaAtual >= dataHoraComparar.getHours()) {
           return res.status(406).json({ message: "Plantão sendo finalizado fora do horário da escala." });
         }
         break;
 
       case 'URO':
-        if (diaAtual != diaPlantao && diaPlantao != diaAnteriorNumero) {
+        if (horaAtual >= dataHoraComparar.getHours()) {
           return res.status(406).json({ message: "Plantão sendo finalizado fora do horário da escala." });
         }
         break;
 
       case 'GO1':
-        if (diaAtual != diaPlantao && diaPlantao != diaAnteriorNumero) {
+        if (horaAtual >= dataHoraComparar.getHours()) {
           return res.status(406).json({ message: "Plantão sendo finalizado fora do horário da escala." });
         }
         break;
 
       case 'GO2':
-        if (diaAtual != diaPlantao && diaPlantao != diaAnteriorNumero) {
+        if (horaAtual >= dataHoraComparar.getHours()) {
           return res.status(406).json({ message: "Plantão sendo finalizado fora do horário da escala." });
         }
         break;
 
       case 'HKIDS':
-        if (diaAtual != diaPlantao && diaPlantao != diaAnteriorNumero) {
+        if (horaAtual >= dataHoraComparar.getHours()) {
           return res.status(406).json({ message: "Plantão sendo finalizado fora do horário da escala." });
         }
         break;
 
       case 'PS1':
-        if (diaAtual != diaPlantao && diaPlantao != diaAnteriorNumero) {
+        if (horaAtual >= dataHoraComparar.getHours()) {
           return res.status(406).json({ message: "Plantão sendo finalizado fora do horário da escala." });
         }
         break;
 
       case 'PS2':
-        if (diaAtual != diaPlantao && diaPlantao != diaAnteriorNumero) {
+        if (horaAtual >= dataHoraComparar.getHours()) {
           return res.status(406).json({ message: "Plantão sendo finalizado fora do horário da escala." });
         }
         break;
 
       case 'HKP':
-        if (diaAtual != diaPlantao && diaPlantao != diaAnteriorNumero) {
+        if (horaAtual >= dataHoraComparar.getHours()) {
           return res.status(406).json({ message: "Plantão sendo finalizado fora do horário da escala." });
         }
         break;
 
       case 'ORTO':
-        if (diaAtual != diaPlantao && diaPlantao != diaAnteriorNumero) {
+        if (horaAtual >= dataHoraComparar.getHours()) {
           return res.status(406).json({ message: "Plantão sendo finalizado fora do horário da escala." });
         }
         break;
 
       case 'PART':
-        if (diaAtual != diaPlantao && diaPlantao != diaAnteriorNumero) {
+        if (horaAtual >= dataHoraComparar.getHours()) {
           return res.status(406).json({ message: "Plantão sendo finalizado fora do horário da escala." });
         }
         break;
 
       case 'UCI':
-        if (diaAtual != diaPlantao && diaPlantao != diaAnteriorNumero) {
+        if (horaAtual >= dataHoraComparar.getHours()) {
           return res.status(406).json({ message: "Plantão sendo finalizado fora do horário da escala." });
         }
         break;
 
       case 'UTIG1':
-        if (diaAtual != diaPlantao && diaPlantao != diaAnteriorNumero) {
+        if (horaAtual >= dataHoraComparar.getHours()) {
           return res.status(406).json({ message: "Plantão sendo finalizado fora do horário da escala." });
         }
         break;
 
       case 'UTIG2':
-        if (diaAtual != diaPlantao && diaPlantao != diaAnteriorNumero) {
+        if (horaAtual >= dataHoraComparar.getHours()) {
           return res.status(406).json({ message: "Plantão sendo finalizado fora do horário da escala." });
         }
         break;
 
       case 'UTIN':
-        if (diaAtual != diaPlantao && diaPlantao != diaAnteriorNumero) {
+        if (horaAtual >= dataHoraComparar.getHours()) {
           return res.status(406).json({ message: "Plantão sendo finalizado fora do horário da escala." });
         }
         break;
 
       case 'UTIP':
-        if (diaAtual != diaPlantao && diaPlantao != diaAnteriorNumero) {
+        if (horaAtual >= dataHoraComparar.getHours()) {
           return res.status(406).json({ message: "Plantão sendo finalizado fora do horário da escala." });
         }
         break;
 
       case 'CAD':
-        if (diaAtual != diaPlantao && diaPlantao != diaAnteriorNumero) {
+        if (horaAtual >= dataHoraComparar.getHours()) {
           return res.status(406).json({ message: "Plantão sendo finalizado fora do horário da escala." });
         }
         break;
+        
       default:
         return res.status(400).json({ message: "Tipo de escala inválido" })
     }
+
 
     //não é o jeito que queria fazer, mas deu certo
     const updatePlantaoQuery = `

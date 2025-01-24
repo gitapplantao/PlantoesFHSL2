@@ -304,11 +304,13 @@ function PlantoesLista() {
       const token = sessionStorage.getItem("token");
       const plantaoId = plantaoAtual.NR_SEQUENCIA;
       const dt_inicioFormatted = convertToCustomFormat(plantaoAtual.dt_inicio);
+      const dt_finalFormatted = convertToCustomFormat(plantaoAtual.dt_fim);
 
       const requestBody = {
         plantaoId,
         tipo_escala: plantaoAtual.tipo_escala,
         dt_inicio: dt_inicioFormatted,
+        dt_final: dt_finalFormatted,
         password
       };
 
