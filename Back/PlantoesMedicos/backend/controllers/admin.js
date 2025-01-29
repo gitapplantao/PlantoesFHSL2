@@ -1,46 +1,47 @@
+const { autoCommit } = require('oracledb');
 const { getConnection } = require('../dbConfig');
 const XLSX = require('xlsx');
 //const format = require('date-fns');
 
 async function getUsers(req, res) {
-    let connection;
-    try {
-      connection = await getConnection();
-  
-      const query = `
+  let connection;
+  try {
+    connection = await getConnection();
+
+    const query = `
         SELECT cd_pessoa_fisica, nm_usuario, nm_pessoa_fisica, ie_admin, dt_criacao, dt_atualizacao 
         FROM fhsl_app_tasy_users
         WHERE nm_pessoa_fisica LIKE :name
         ORDER BY nm_pessoa_fisica
       `;
-      const result = await connection.execute(query, { name: `%${req.query.name || ''}%` });
-  
-      if (result.rows.length === 0) {
-        return res.status(404).json({ message: "Nenhum usuário encontrado." });
-      }
-  
-      const users = result.rows.map(row => ({
-        cd_pessoa_fisica: row[0],
-        nm_usuario: row[1],
-        nm_pessoa_fisica: row[2],
-        ie_admin: row[3],
-        dt_criacao: row[4],
-        dt_atualizacao: row[5],
-      }));
-  
-      res.json(users);
-    } catch (error) {
-      console.error('Erro ao buscar usuários:', error);
-      if (connection) {
-        try {
-          await connection.close();
-        } catch (err) {
-          console.error('Erro ao fechar conexão:', err);
-        }
-      }
-      res.status(500).json({ message: "Erro interno ao buscar usuários." });
+    const result = await connection.execute(query, { name: `%${req.query.name || ''}%` });
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: "Nenhum usuário encontrado." });
     }
+
+    const users = result.rows.map(row => ({
+      cd_pessoa_fisica: row[0],
+      nm_usuario: row[1],
+      nm_pessoa_fisica: row[2],
+      ie_admin: row[3],
+      dt_criacao: row[4],
+      dt_atualizacao: row[5],
+    }));
+
+    res.json(users);
+  } catch (error) {
+    console.error('Erro ao buscar usuários:', error);
+    if (connection) {
+      try {
+        await connection.close();
+      } catch (err) {
+        console.error('Erro ao fechar conexão:', err);
+      }
+    }
+    res.status(500).json({ message: "Erro interno ao buscar usuários." });
   }
+}
 
 async function resetPassword(req, res) {
   const { cd_pessoa_fisica } = req.body;
@@ -75,17 +76,17 @@ async function resetPassword(req, res) {
 }
 
 async function getPlantoes(req, res) {
-    const { cd_medico, dataInicial, dataFinal } = req.query;
-  
-    if (!cd_medico || !dataInicial || !dataFinal) {
-      return res.status(400).json({ message: "Parâmetros necessários ausentes." });
-    }
-  
-    let connection;
-    try {
-      connection = await getConnection();
-  
-      const query = `
+  const { cd_medico, dataInicial, dataFinal } = req.query;
+
+  if (!cd_medico || !dataInicial || !dataFinal) {
+    return res.status(400).json({ message: "Parâmetros necessários ausentes." });
+  }
+
+  let connection;
+  try {
+    connection = await getConnection();
+
+    const query = `
         SELECT
           nr_sequencia,
           cd_medico,
@@ -106,39 +107,39 @@ async function getPlantoes(req, res) {
           AND dt_inicial_prev <= TO_DATE(:dataFinal, 'yyyy-MM-dd')
           order by dt_inicial_prev desc
       `;
-      const result = await connection.execute(query, { cd_medico, dataInicial, dataFinal });
-  
-      if (result.rows.length === 0) {
-        return res.status(404).json({ message: "Nenhum plantão encontrado." });
-      }
-  
-      const plantoes = result.rows.map(row => ({
-        nr_sequencia: row[0],
-        cd_medico: row[1],
-        nm_medico: row[2],
-        dt_inicial: row[3],
-        dt_final: row[4],
-        dt_inicial_prev: row[5],
-        dt_final_prev: row[6],
-        dt_chamado: row[7],
-        situacao: row[8],
-      }));
-  
-      res.json(plantoes);
-    } catch (error) {
-      console.error('Erro ao buscar plantões:', error);
-      res.status(500).json({ message: "Erro interno ao buscar plantões." });
-    } finally {
-      if (connection) {
-        try {
-          await connection.close();
-        } catch (err) {
-          console.error('Erro ao fechar conexão:', err);
-        }
+    const result = await connection.execute(query, { cd_medico, dataInicial, dataFinal });
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: "Nenhum plantão encontrado." });
+    }
+
+    const plantoes = result.rows.map(row => ({
+      nr_sequencia: row[0],
+      cd_medico: row[1],
+      nm_medico: row[2],
+      dt_inicial: row[3],
+      dt_final: row[4],
+      dt_inicial_prev: row[5],
+      dt_final_prev: row[6],
+      dt_chamado: row[7],
+      situacao: row[8],
+    }));
+
+    res.json(plantoes);
+  } catch (error) {
+    console.error('Erro ao buscar plantões:', error);
+    res.status(500).json({ message: "Erro interno ao buscar plantões." });
+  } finally {
+    if (connection) {
+      try {
+        await connection.close();
+      } catch (err) {
+        console.error('Erro ao fechar conexão:', err);
       }
     }
   }
-  
+}
+
 
 async function updatePlantao(req, res) {
   const { nr_sequencia, dt_inicial, dt_final } = req.body;
@@ -251,9 +252,9 @@ async function downloadPlantaoXLSX(req, res) {
 
 
 async function downloadPlantaoMes(req, res) {
-  const {  mesAno } = req.query;
+  const { mesAno } = req.query;
 
-  if (!mesAno ) {
+  if (!mesAno) {
     return res.status(400).json({ message: "Parâmetros necessários ausentes." });
   }
 
@@ -332,69 +333,78 @@ async function getPlantao24h(req, res) {
   const { tipo_escala, mesAno } = req.query;
 
   if (!tipo_escala || !mesAno) {
-      return res.status(400).json({ message: "Parâmetros necessários ausentes." });
+    return res.status(400).json({ message: "Parâmetros necessários ausentes." });
   }
 
   let connection;
   try {
-      connection = await getConnection();
+    connection = await getConnection();
 
-      const query = `
-         SELECT 
-            t.tipo_escala, 
-            t.dt_inicio, 
-            t.dt_fim, 
-            t.cd_pessoa_fisica, 
-            t.nm_medico, 
-            t.escala,
-            CASE 
-                WHEN m.cd_medico IS NOT NULL AND m.dt_inicial IS NOT NULL THEN 'Finalizado'
-                ELSE NULL
-            END AS status,
-            Obter_Dia_Semana(dt_inicio)
-         FROM 
-            fhsl_plantoes_app_tasy t
-         LEFT JOIN 
-            MEDICO_PLANTAO m
-         ON 
-            t.cd_pessoa_fisica = m.cd_medico 
-            AND to_char(t.dt_inicio,'dd/mm/yyyy hh24') = to_char(m.dt_inicial,'dd/mm/yyyy hh24')
-         WHERE 
-            t.tipo_escala = :tipo_escala
-            AND to_char(t.dt_inicio, 'mm/yyyy') = :mesAno
+    const query = `
+SELECT 
+    t.tipo_escala, 
+    t.dt_inicio, 
+    t.dt_fim, 
+    t.cd_pessoa_fisica,
+    t.nm_medico,
+    t.nm_medico_origem,
+    t.escala,
+    to_char(m.dt_inicial, 'dd/mm/yyyy hh24:mi:ss'),
+    to_char(m.dt_final, 'dd/mm/yyyy hh24:mi:ss'),
+    CASE
+        WHEN m.DT_INICIAL IS NULL AND m.DT_FINAL IS NULL THEN 'Pendente'
+        WHEN m.DT_INICIAL IS NOT NULL AND m.DT_FINAL IS NULL THEN 'Não finalizado'
+    END AS status_hora,
+    CASE 
+      WHEN m.cd_medico IS NOT NULL AND m.dt_inicial IS NOT NULL AND m.dt_final IS NULL THEN 'Iniciado'
+      WHEN m.cd_medico IS NOT NULL AND m.dt_inicial IS NOT NULL AND m.dt_final IS NOT NULL THEN 'Finalizado'
+      ELSE NULL
+    END AS status,
+    Obter_Dia_Semana(dt_inicio)
+    FROM 
+        fhsl_plantoes_app_tasy t
+    LEFT JOIN MEDICO_PLANTAO m ON t.cd_pessoa_fisica = m.cd_medico 
+    AND to_char(t.dt_inicio,'dd/mm/yyyy hh24') = to_char(m.dt_inicial,'dd/mm/yyyy hh24')
+    WHERE 
+        t.tipo_escala = :tipo_escala
+    AND to_char(t.dt_inicio, 'mm/yyyy') = :mesAno
       `;
-      const result = await connection.execute(query, { tipo_escala, mesAno });
+    const result = await connection.execute(query, { tipo_escala, mesAno });
 
 
 
-      if (result.rows.length === 0) {
-          return res.status(404).json({ message: "Nenhum plantão encontrado." });
-      }
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: "Nenhum plantão encontrado." });
+    }
 
-      const plantoes = result.rows.map(row => ({
-          tipo_escala: row[0],
-          dt_inicio: row[1],
-          dt_fim: row[2],
-          cd_pessoa_fisica: row[3],
-          nm_medico: row[4],
-          escala: row[5],
-          situacao: row[6],
-          dia_semana: row[7]
-      }));
+    const plantoes = result.rows.map(row => ({
+      tipo_escala: row[0],
+      dt_inicio: row[1],
+      dt_fim: row[2],
+      cd_pessoa_fisica: row[3],
+      nm_medico: row[4],
+      nm_medico_origem: row[5],
+      escala: row[6],
+      dt_inicial: row[7],
+      dt_final: row[8],
+      status_hora: row[9],
+      situacao: row[10],
+      dia_semana: row[11]
+    }));
 
-      res.json(plantoes);
+    res.json(plantoes);
 
   } catch (error) {
-      console.error('Erro ao buscar plantões 24h:', error);
-      res.status(500).json({ message: "Erro interno ao buscar plantões 24h." });
+    console.error('Erro ao buscar plantões 24h:', error);
+    res.status(500).json({ message: "Erro interno ao buscar plantões 24h." });
   } finally {
-      if (connection) {
-          try {
-              await connection.close();
-          } catch (err) {
-              console.error('Erro ao fechar conexão:', err);
-          }
+    if (connection) {
+      try {
+        await connection.close();
+      } catch (err) {
+        console.error('Erro ao fechar conexão:', err);
       }
+    }
   }
 }
 
@@ -403,246 +413,248 @@ async function confirmarPlantao(req, res) {
   const { tipo_escala, cd_medico, dt_inicio, dt_final } = req.body;
 
   if (!tipo_escala || !cd_medico || !dt_inicio || !dt_final) {
-      return res.status(400).json({ message: "Parâmetros necessários ausentes." });
+    return res.status(400).json({ message: "Parâmetros necessários ausentes." });
   }
 
   let connection;
   try {
-      connection = await getConnection();
-      console.log('Conexão com o banco de dados estabelecida com sucesso.');
+    connection = await getConnection();
+    console.log('Conexão com o banco de dados estabelecida com sucesso.');
 
-      const dtInicio = new Date(dt_inicio.replace(/(\d{2})\/(\d{2})\/(\d{4})/, "$3-$2-$1"));
-      if (isNaN(dtInicio.getTime())){
-        console.error('Formato de data inválido: ${dt_inicio}');
-        return res.status(400).json({message: 'Formato de data inválido.'});
-      }
+    const dtInicio = new Date(dt_inicio.replace(/(\d{2})\/(\d{2})\/(\d{4})/, "$3-$2-$1"));
+    if (isNaN(dtInicio.getTime())) {
+      console.error('Formato de data inválido: ${dt_inicio}');
+      return res.status(400).json({ message: 'Formato de data inválido.' });
+    }
 
-      const horas = dtInicio.getHours();
-      const diasDaSemana = ["Domingo", "Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado"];
-      const diaSemana = diasDaSemana[dtInicio.getDay()];
+    const horas = dtInicio.getHours();
+    const diasDaSemana = ["Domingo", "Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado"];
+    const diaSemana = diasDaSemana[dtInicio.getDay()];
 
-      console.log(`Dia da semana: ${diaSemana}, Horas ${horas}`)
+    console.log("Informações recebidas", req.body);
+    console.log(`Dia da semana: ${diaSemana}, Horas ${horas}`)
 
-      let nr_Seq_tipo_plantao, nr_seq_regra_esp;
+    let nr_Seq_tipo_plantao, nr_seq_regra_esp;
 
-      switch (tipo_escala) {
-          case 'CARD': //cirurgia cardiaca
-              nr_Seq_tipo_plantao = 34;
-              nr_seq_regra_esp = 35;
-              break;
+    switch (tipo_escala) {
+      case 'CARD': //cirurgia cardiaca
+        nr_Seq_tipo_plantao = 34;
+        nr_seq_regra_esp = 35;
+        break;
 
-          case 'PED':
-              nr_Seq_tipo_plantao = 12;
-              nr_seq_regra_esp = 30;
-              break;
+      case 'PED':
+        nr_Seq_tipo_plantao = 12;
+        nr_seq_regra_esp = 30;
+        break;
 
-          case 'CIRT':
-                nr_Seq_tipo_plantao = 45;
-                nr_seq_regra_esp = 46;
-              break;
+      case 'CIRT':
+        nr_Seq_tipo_plantao = 45;
+        nr_seq_regra_esp = 46;
+        break;
 
-          case 'CVAR':
-              nr_Seq_tipo_plantao = 39;
-              nr_seq_regra_esp = 40;
-              break;
+      case 'CVAR':
+        nr_Seq_tipo_plantao = 39;
+        nr_seq_regra_esp = 40;
+        break;
 
-          case 'OFT':
-              nr_Seq_tipo_plantao = 37;
-              nr_seq_regra_esp = 38;
-              break;
-          
-          case 'AMBC':
-              nr_Seq_tipo_plantao = 55;
-              nr_seq_regra_esp = 55;
-              break;
+      case 'OFT':
+        nr_Seq_tipo_plantao = 37;
+        nr_seq_regra_esp = 38;
+        break;
 
-          case 'GO1':
-            if (horas >= 7 && horas <= 18 && (diaSemana !== 'Sábado' && diaSemana !== 'Domingo')) { // diurno
-              nr_Seq_tipo_plantao = 29;
-              nr_seq_regra_esp = 11;
-            } else if (horas >= 7 && horas <= 18 && (diaSemana === 'Sábado' || diaSemana === 'Domingo')) { // diurno final de semana
-              nr_Seq_tipo_plantao = 13;
-              nr_seq_regra_esp = 13;
-            } else if ((horas >= 19 || horas < 7) && (diaSemana === 'Sábado' || diaSemana === 'Domingo')) { // noturno final de semana
-              nr_Seq_tipo_plantao = 14;
-              nr_seq_regra_esp = 12;
-            } else { // noturno
-              nr_Seq_tipo_plantao = 20;
-              nr_seq_regra_esp = 21;
-            }
-            break;
+      case 'AMBC':
+        nr_Seq_tipo_plantao = 55;
+        nr_seq_regra_esp = 55;
+        break;
 
-          case 'GO2':
-            if (horas >= 7 && horas <= 18 && (diaSemana !== 'Sábado' && diaSemana !== 'Domingo')) { // diurno
-              nr_Seq_tipo_plantao = 29;
-              nr_seq_regra_esp = 11;
-            } else if (horas >= 7 && horas <= 18 && (diaSemana === 'Sábado' || diaSemana === 'Domingo')) { // diurno final de semana
-              nr_Seq_tipo_plantao = 13;
-              nr_seq_regra_esp = 13;
-            } else if ((horas >= 19 || horas < 7) && (diaSemana === 'Sábado' || diaSemana === 'Domingo')) { // noturno final de semana
-              nr_Seq_tipo_plantao = 14;
-              nr_seq_regra_esp = 12;
-            } else { // noturno
-              nr_Seq_tipo_plantao = 20;
-              nr_seq_regra_esp = 21;
-            }
-            break;
+      case 'GO1':
+        if (horas >= 7 && horas <= 18 && (diaSemana !== 'Sábado' && diaSemana !== 'Domingo')) { // diurno
+          nr_Seq_tipo_plantao = 29;
+          nr_seq_regra_esp = 11;
+        } else if (horas >= 7 && horas <= 18 && (diaSemana === 'Sábado' || diaSemana === 'Domingo')) { // diurno final de semana
+          nr_Seq_tipo_plantao = 13;
+          nr_seq_regra_esp = 13;
+        } else if ((horas >= 19 || horas < 7) && (diaSemana === 'Sábado' || diaSemana === 'Domingo')) { // noturno final de semana
+          nr_Seq_tipo_plantao = 14;
+          nr_seq_regra_esp = 12;
+        } else { // noturno
+          nr_Seq_tipo_plantao = 20;
+          nr_seq_regra_esp = 21;
+        }
+        break;
 
-          case 'HKIDS':
-            if (horas >= 7 && horas <= 12){ //dia
-                nr_Seq_tipo_plantao = 52;
-                nr_seq_regra_esp = 53;
-              } else if (horas >=13 && horas <=18){ //tarde
-                nr_Seq_tipo_plantao = 51;
-                nr_seq_regra_esp = 51;
-              } else { //noite
-                nr_Seq_tipo_plantao = 46;
-                nr_seq_regra_esp = 47;
-              }
-            break;
+      case 'GO2':
+        if (horas >= 7 && horas <= 18 && (diaSemana !== 'Sábado' && diaSemana !== 'Domingo')) { // diurno
+          nr_Seq_tipo_plantao = 29;
+          nr_seq_regra_esp = 11;
+        } else if (horas >= 7 && horas <= 18 && (diaSemana === 'Sábado' || diaSemana === 'Domingo')) { // diurno final de semana
+          nr_Seq_tipo_plantao = 13;
+          nr_seq_regra_esp = 13;
+        } else if ((horas >= 19 || horas < 7) && (diaSemana === 'Sábado' || diaSemana === 'Domingo')) { // noturno final de semana
+          nr_Seq_tipo_plantao = 14;
+          nr_seq_regra_esp = 12;
+        } else { // noturno
+          nr_Seq_tipo_plantao = 20;
+          nr_seq_regra_esp = 21;
+        }
+        break;
 
-          case 'OTO':
-            nr_Seq_tipo_plantao = 41;
-            nr_seq_regra_esp = 42;
-            break;
+      case 'HKIDS':
+        if (horas >= 7 && horas <= 12) { //dia
+          nr_Seq_tipo_plantao = 52;
+          nr_seq_regra_esp = 53;
+        } else if (horas >= 13 && horas <= 18) { //tarde
+          nr_Seq_tipo_plantao = 51;
+          nr_seq_regra_esp = 51;
+        } else { //noite
+          nr_Seq_tipo_plantao = 46;
+          nr_seq_regra_esp = 47;
+        }
+        break;
 
-          case 'PS1':
-            if (horas >= 7 && horas <= 18 && (diaSemana === 'Sábado' || diaSemana === 'Domingo')) { // diurno final de semana
-                nr_Seq_tipo_plantao = 22;
-                nr_seq_regra_esp = 24;
-              } else if (horas >= 7 && horas <= 18){ //diurno
-                nr_Seq_tipo_plantao = 24;
-                nr_seq_regra_esp = 25;
-              } else { //noturno
-                nr_Seq_tipo_plantao = 23;
-                nr_seq_regra_esp = 23;
-              }
-              break;
+      case 'OTO':
+        nr_Seq_tipo_plantao = 41;
+        nr_seq_regra_esp = 42;
+        break;
 
-          case 'PS2':
-            if (horas >= 7 && horas <= 18 && (diaSemana === 'Sábado' || diaSemana === 'Domingo')) { // diurno final de semana
-                nr_Seq_tipo_plantao = 25;
-                nr_seq_regra_esp = 26;
-              } else if (horas >= 7 && horas <= 18){ //diurno
-                nr_Seq_tipo_plantao = 21;
-                nr_seq_regra_esp = 22;
-              } else { //noturno
-                nr_Seq_tipo_plantao = 26;
-                nr_seq_regra_esp = 27;
-              }
-              break;
+      case 'PS1':
+        if (horas >= 7 && horas <= 18 && (diaSemana === 'Sábado' || diaSemana === 'Domingo')) { // diurno final de semana
+          nr_Seq_tipo_plantao = 22;
+          nr_seq_regra_esp = 24;
+        } else if (horas >= 7 && horas <= 18) { //diurno
+          nr_Seq_tipo_plantao = 24;
+          nr_seq_regra_esp = 25;
+        } else { //noturno
+          nr_Seq_tipo_plantao = 23;
+          nr_seq_regra_esp = 23;
+        }
+        break;
 
-          case 'HKP':
-            if (horas >= 7 && horas <=12){ //dia
-                nr_Seq_tipo_plantao = 8;
-                nr_seq_regra_esp = 8;
-              } else if (horas >= 13 && horas <= 18){ //tarde
-                nr_Seq_tipo_plantao = 10;
-                nr_seq_regra_esp = 9;
-              } else { //noite
-                nr_Seq_tipo_plantao = 11;
-                nr_seq_regra_esp = 16;
-              }
-              break;
+      case 'PS2':
+        if (horas >= 7 && horas <= 18 && (diaSemana === 'Sábado' || diaSemana === 'Domingo')) { // diurno final de semana
+          nr_Seq_tipo_plantao = 25;
+          nr_seq_regra_esp = 26;
+        } else if (horas >= 7 && horas <= 18) { //diurno
+          nr_Seq_tipo_plantao = 21;
+          nr_seq_regra_esp = 22;
+        } else { //noturno
+          nr_Seq_tipo_plantao = 26;
+          nr_seq_regra_esp = 27;
+        }
+        break;
 
-          case 'ORTO':
-            if (horas >= 7 && horas <= 12){ //dia
-                nr_Seq_tipo_plantao = 18;
-                nr_seq_regra_esp = 19;
-              } else if (horas >=13 && horas <=18){ //tarde
-                nr_Seq_tipo_plantao = 17;
-                nr_seq_regra_esp = 20;
-              } else { //noite
-                nr_Seq_tipo_plantao = 19;
-                nr_seq_regra_esp = 18;
-              }
-              break;
+      case 'HKP':
+        if (horas >= 7 && horas <= 12) { //dia
+          nr_Seq_tipo_plantao = 8;
+          nr_seq_regra_esp = 8;
+        } else if (horas >= 13 && horas <= 18) { //tarde
+          nr_Seq_tipo_plantao = 10;
+          nr_seq_regra_esp = 9;
+        } else { //noite
+          nr_Seq_tipo_plantao = 11;
+          nr_seq_regra_esp = 16;
+        }
+        break;
 
-          case 'PART':
-            if (horas >= 7 && horas <= 18 && (diaSemana === 'Sábado' || diaSemana === 'Domingo')) { // diurno final de semana
-              nr_Seq_tipo_plantao = 16;
-              nr_seq_regra_esp = 17;
-            } else if (horas >= 7 && horas <= 18){ //diurno
-              nr_Seq_tipo_plantao = 48;
-              nr_seq_regra_esp = 49;
-            } else { //noite
-              nr_Seq_tipo_plantao = 15;
-              nr_seq_regra_esp = 10;
-            }
-              break;
+      case 'ORTO':
+        if (horas >= 7 && horas <= 12) { //dia
+          nr_Seq_tipo_plantao = 18;
+          nr_seq_regra_esp = 19;
+        } else if (horas >= 13 && horas <= 18) { //tarde
+          nr_Seq_tipo_plantao = 17;
+          nr_seq_regra_esp = 20;
+        } else { //noite
+          nr_Seq_tipo_plantao = 19;
+          nr_seq_regra_esp = 18;
+        }
+        break;
 
-          case 'UCI':
-             if (horas >= 7 && horas <= 18 && (diaSemana === 'Sábado' || diaSemana === 'Domingo')) { // diurno final de semana
-              nr_Seq_tipo_plantao = 43;
-              nr_seq_regra_esp = 43;
-            } else if (horas >= 7 && horas <= 18){ //diurno
-              nr_Seq_tipo_plantao = 47;
-              nr_seq_regra_esp = 48
-            } else { //noturno
-              nr_Seq_tipo_plantao = 42;
-              nr_sequencia = 44;
-            }
-              break;
+      case 'PART':
+        if (horas >= 7 && horas <= 18 && (diaSemana === 'Sábado' || diaSemana === 'Domingo')) { // diurno final de semana
+          nr_Seq_tipo_plantao = 16;
+          nr_seq_regra_esp = 17;
+        } else if (horas >= 7 && horas <= 18) { //diurno
+          nr_Seq_tipo_plantao = 48;
+          nr_seq_regra_esp = 49;
+        } else { //noite
+          nr_Seq_tipo_plantao = 15;
+          nr_seq_regra_esp = 10;
+        }
+        break;
 
-          case 'URO':
-              nr_Seq_tipo_plantao = 35;
-              nr_seq_regra_esp = 36;
-              break;
+      case 'UCI':
+        if (horas >= 7 && horas <= 18 && (diaSemana === 'Sábado' || diaSemana === 'Domingo')) { // diurno final de semana
+          nr_Seq_tipo_plantao = 43;
+          nr_seq_regra_esp = 43;
+        } else if (horas >= 7 && horas <= 18) { //diurno
+          nr_Seq_tipo_plantao = 47;
+          nr_seq_regra_esp = 48
+        } else { //noturno
+          nr_Seq_tipo_plantao = 42;
+          nr_sequencia = 44;
+        }
+        break;
 
-          case 'UTIG1':
-            if (horas >= 7 && horas <= 18){ //diurno
-              nr_Seq_tipo_plantao = 28;
-              nr_seq_regra_esp = 28;
-            } else { //noturno
-              nr_Seq_tipo_plantao = 27;
-              nr_seq_regra_esp = 29;
-            }
-              break;
+      case 'URO':
+        nr_Seq_tipo_plantao = 35;
+        nr_seq_regra_esp = 36;
+        break;
 
-          case 'UTIG2':
-            if (horas >= 7 && horas <= 18){ //diurno
-              nr_Seq_tipo_plantao = 28;
-              nr_seq_regra_esp = 28;
-            } else { //noturno
-              nr_Seq_tipo_plantao = 27;
-              nr_seq_regra_esp = 29;
-            }
-              break;
+      case 'UTIG1':
+        if (horas >= 7 && horas <= 18) { //diurno
+          nr_Seq_tipo_plantao = 28;
+          nr_seq_regra_esp = 28;
+        } else { //noturno
+          nr_Seq_tipo_plantao = 27;
+          nr_seq_regra_esp = 29;
+        }
+        break;
 
-          case 'UTIN':
-            if (horas >= 7  && horas <= 18){ //diurno
-              nr_Seq_tipo_plantao = 30;
-              nr_seq_regra_esp = 31;
-            } else { //noturno
-              nr_Seq_tipo_plantao = 31;
-              nr_seq_regra_esp = 32;}
-              break;
+      case 'UTIG2':
+        if (horas >= 7 && horas <= 18) { //diurno
+          nr_Seq_tipo_plantao = 28;
+          nr_seq_regra_esp = 28;
+        } else { //noturno
+          nr_Seq_tipo_plantao = 27;
+          nr_seq_regra_esp = 29;
+        }
+        break;
 
-          case 'UTIP':
-            if (horas >= 7 && horas <= 18){ //diurno
-              nr_Seq_tipo_plantao = 32;
-              nr_seq_regra_esp = 33;
-            } else { //noturno
-              nr_Seq_tipo_plantao = 33;
-              nr_seq_regra_esp = 34;
-            }
-              break;
+      case 'UTIN':
+        if (horas >= 7 && horas <= 18) { //diurno
+          nr_Seq_tipo_plantao = 30;
+          nr_seq_regra_esp = 31;
+        } else { //noturno
+          nr_Seq_tipo_plantao = 31;
+          nr_seq_regra_esp = 32;
+        }
+        break;
 
-          case 'CAD': //cardiologia
-            if (horas >= 7 && horas <= 18) { //cardiologia FDS e feriado diurno
-              nr_Seq_tipo_plantao = 56;
-              nr_seq_regra_esp = 56;
-            } else { // cardiologia FDS e feriado noite
-              nr_Seq_tipo_plantao = 54;
-              nr_seq_regra_esp = 54;
-            }
-              break;
+      case 'UTIP':
+        if (horas >= 7 && horas <= 18) { //diurno
+          nr_Seq_tipo_plantao = 32;
+          nr_seq_regra_esp = 33;
+        } else { //noturno
+          nr_Seq_tipo_plantao = 33;
+          nr_seq_regra_esp = 34;
+        }
+        break;
 
-          default:
-              return res.status(400).json({ message: "Tipo de escala inválido." });
-      }
-      
-      const query = `
+      case 'CAD': //cardiologia
+        if (horas >= 7 && horas <= 18) { //cardiologia FDS e feriado diurno
+          nr_Seq_tipo_plantao = 56;
+          nr_seq_regra_esp = 56;
+        } else { // cardiologia FDS e feriado noite
+          nr_Seq_tipo_plantao = 54;
+          nr_seq_regra_esp = 54;
+        }
+        break;
+
+      default:
+        return res.status(400).json({ message: "Tipo de escala inválido." });
+    }
+
+    const query = `
           INSERT INTO MEDICO_PLANTAO (
               cd_estabelecimento, 
               nr_sequencia, 
@@ -674,46 +686,75 @@ async function confirmarPlantao(req, res) {
           )
       `;
 
-      if (Array.isArray(nr_Seq_tipo_plantao) && Array.isArray(nr_seq_regra_esp)) {
-          for (let i = 0; i < nr_Seq_tipo_plantao.length; i++) {
-              const result = await connection.execute(query, {
-                  cd_medico,
-                  dt_inicial_prev: dt_inicio,
-                  dt_final_prev: dt_final,
-                  dt_inicial: dt_inicio,
-                  dt_final: dt_final,
-                  nr_Seq_tipo_plantao: nr_Seq_tipo_plantao[i],
-                  nr_seq_regra_esp: nr_seq_regra_esp[i]
-              }, { autoCommit: true });
-              console.log(`Inserção realizada para ${nr_Seq_tipo_plantao[i]} e ${nr_seq_regra_esp[i]}`, result);
-          }
-      } else {
-          const result = await connection.execute(query, {
-              cd_medico,
-              dt_inicial_prev: dt_inicio,
-              dt_final_prev: dt_final,
-              dt_inicial: dt_inicio,
-              dt_final: dt_final,
-              nr_Seq_tipo_plantao,
-              nr_seq_regra_esp
-          }, { autoCommit: true });
-          console.log('Inserção realizada', result);
+    if (Array.isArray(nr_Seq_tipo_plantao) && Array.isArray(nr_seq_regra_esp)) {
+      for (let i = 0; i < nr_Seq_tipo_plantao.length; i++) {
+        const result = await connection.execute(query, {
+          cd_medico,
+          dt_inicial_prev: dt_inicio,
+          dt_final_prev: dt_final,
+          dt_inicial: dt_inicio,
+          dt_final: dt_final,
+          nr_Seq_tipo_plantao: nr_Seq_tipo_plantao[i],
+          nr_seq_regra_esp: nr_seq_regra_esp[i]
+        }, { autoCommit: true });
+        console.log(`Inserção realizada para ${nr_Seq_tipo_plantao[i]} e ${nr_seq_regra_esp[i]}`, result);
       }
-      console.log("Tipo escala:", tipo_escala, "Seq tipo plantão:", nr_Seq_tipo_plantao, "Regra esp:", nr_seq_regra_esp);
+    } else {
+      const result = await connection.execute(query, {
+        cd_medico,
+        dt_inicial_prev: dt_inicio,
+        dt_final_prev: dt_final,
+        dt_inicial: dt_inicio,
+        dt_final: dt_final,
+        nr_Seq_tipo_plantao,
+        nr_seq_regra_esp
+      }, { autoCommit: true });
+      console.log('Inserção realizada', result);
+    }
+    console.log("Tipo escala:", tipo_escala, "Seq tipo plantão:", nr_Seq_tipo_plantao, "Regra esp:", nr_seq_regra_esp);
 
-      res.status(200).json({ message: "Plantão confirmado com sucesso." });
+    res.status(200).json({ message: "Plantão confirmado com sucesso." });
 
   } catch (error) {
-      console.error('Erro ao confirmar plantão:', error);
-      res.status(500).json({ message: "Erro interno ao confirmar plantão." });
+    console.error('Erro ao confirmar plantão:', error);
+    res.status(500).json({ message: "Erro interno ao confirmar plantão." });
   } finally {
-      if (connection) {
-          try {
-              await connection.close();
-          } catch (err) {
-              console.error('Erro ao fechar conexão:', err);
-          }
+    if (connection) {
+      try {
+        await connection.close();
+      } catch (err) {
+        console.error('Erro ao fechar conexão:', err);
       }
+    }
+  }
+}
+
+async function putEncerrarPlantao(req, res) {
+  const { dt_inicio, dt_final, cd_medico } = req.body;
+
+  if (!dt_inicio || !dt_final || !cd_medico) {
+    return res.status(400).json({ message: "Parâmetros necessários ausentes." });
+  }
+
+  try {
+      const connection = await getConnection();
+
+      const encerrarPlantao = `      UPDATE MEDICO_PLANTAO
+      SET DT_FINAL = TO_TIMESTAMP(:dt_final, 'DD/MM/YYYY HH24:MI:SS'),
+          QT_MINUTO = ROUND(
+            (EXTRACT(DAY FROM (TO_TIMESTAMP(:dt_final, 'DD/MM/YYYY HH24:MI:SS') - TO_TIMESTAMP(:dt_inicio, 'DD/MM/YYYY HH24:MI:SS'))) * 24 * 60) + 
+            (EXTRACT(HOUR FROM (TO_TIMESTAMP(:dt_final, 'DD/MM/YYYY HH24:MI:SS') - TO_TIMESTAMP(:dt_inicio, 'DD/MM/YYYY HH24:MI:SS'))) * 60) + 
+            EXTRACT(MINUTE FROM (TO_TIMESTAMP(:dt_final, 'DD/MM/YYYY HH24:MI:SS') - TO_TIMESTAMP(:dt_inicio, 'DD/MM/YYYY HH24:MI:SS')))
+          )
+      WHERE CD_MEDICO = :cd_medico
+      AND DT_INICIAL_PREV = TO_TIMESTAMP(:dt_inicio, 'DD/MM/YYYY HH24:MI:SS')`;
+
+      await connection.execute(encerrarPlantao, {dt_inicio, dt_final, cd_medico}, {autoCommit: true});
+
+      res.status(200).json({ message: 'Plantão encerrado com sucesso.'});
+  } catch (error) {
+      console.error('Erro ao tentar encerrar plantão:', error);
+      res.status(500).json({ message: 'Erro interno ao tentar encerrar plantão'});
   }
 }
 
@@ -725,5 +766,6 @@ module.exports = {
   downloadPlantaoXLSX,
   downloadPlantaoMes,
   getPlantao24h,
-  confirmarPlantao
+  confirmarPlantao,
+  putEncerrarPlantao
 };

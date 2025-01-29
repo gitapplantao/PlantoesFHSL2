@@ -3,7 +3,6 @@ import { format, parseISO, parse, isValid } from 'date-fns';
 import './styles/plantoesRefeito.css';
 import Header from './header';
 import api from '../api/config';
-import { createRoutesFromChildren } from 'react-router-dom';
 
 function PlantoesLista() {
   const [plantoes, setPlantoes] = useState([]);
@@ -12,14 +11,9 @@ function PlantoesLista() {
   const [tipoEscala, setTipoEscala] = useState('');
   const [promptPlantao, setPlantoesPrompt] = useState(false);
   const [promptPlantaoFinalizar, setPlantoesPromptFinalizar] = useState(false);
-  const [promptPlantaoSubstituir, setPlantoesPromptSubstituir] = useState(false);
-  const [acaoPlantao, setAcaoPlantao] = useState('');
-  const [showCard, setShowCard] = useState(false);
   const [password, setPassword] = useState('');
   const [dataDiaMesAno, setdataDiaMesAno] = useState('');
-  const [abrirModal, setAbrirModal] = useState(false);
   const [erro, setErro] = useState('');
-  const [confirmado, setConfirmado] = useState(new Set());
   const [atualizado, setAtualizado] = useState([]);
   const [iniciado, setIniciado] = useState([]);
   const [finalizado, setFinalizado] = useState([]);
@@ -113,7 +107,7 @@ function PlantoesLista() {
       setScrollPosition(window.scrollY);
     } catch (error) {
       if (error.response) {
-        console.error("Error ao substituir plantonista:", error.response.data);
+        console.error("Erro ao substituir plantonista:", error.response.data);
         setErro(`Erro ao substituir plantonista: ${error.response.data.message || "Erro desconhecido"}`)
       } else {
         console.error("Erro ao substituir plantonista:", error);

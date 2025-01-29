@@ -10,6 +10,7 @@ function Plantoes24() {
     const [dataMesAno, setDataMesAno] = useState('');
     const [erro, setErro] = useState('');
     const [confirmado, setConfirmado] = useState(new Set());
+    const [encerrado, setEncerrado] = useState([]);
     const [scrollPosition, setScrollPosition] = useState(0); // Adicionado para rastrear a posição de rolagem
 
     const handleRadioChange = (event) => {
@@ -111,6 +112,50 @@ function Plantoes24() {
             } else {
                 console.error('Erro ao confirmar plantão:', error);
                 setErro('Erro ao confirmar plantão.');
+            }
+        }
+    };
+
+    const putEncerrarPlantao = async (plantao) => {
+        const convertToCustomFormat = (dateString) => {
+            const formatString = 'dd/MM/yyyy HH:mm:ss';
+            const parsedDate = parse(dateString, formatString, new Date());
+            return isValid(parsedDate) ? format (parsedDate, formatString) : null;
+        };
+
+        try {
+            const token = sessionStorage.getItem('token');
+            
+            const dt_inicioFormatted = convertToCustomFormat(plantao.dt_inicio);
+            const dt_finalFormatted = convertToCustomFormat(plantao.dt_fim);
+            if (!dt_inicioFormatted || !dt_finalFormatted) {
+                throw new Error ('Datas inválidas fornecidas.');
+            }
+
+            const requestBody = {
+                cd_medico: plantao.cd_pessoa_fisica,
+                dt_inicio: dt_inicioFormatted,
+                dt_final: dt_finalFormatted
+            };
+
+            console.log('Enviando request body:', requestBody);
+            await api.put('/api/plantoes24/encerrar', requestBody, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+            });
+            
+            setEncerrado(new Set ([...encerrado, plantao.cd_pessoa_fisica]));
+            fetchPlantoes();
+            setScrollPosition(window.scrollY);
+        } catch (error) {
+            if (error.response) {
+                console.error('Erro ao encerrar plantão:', error.response.data);
+                setErro(`Erro ao confirmar plantão: ${error.response.data.message || 'Erro desconhecido'}`);
+            } else {
+                console.error('Erro ao encerrar plantão:', error);
+                setErro('Erro ao encerrar plantão.');
             }
         }
     };
@@ -399,14 +444,22 @@ function Plantoes24() {
                             className={`plantao-card ${confirmado.has(plantao.cd_pessoa_fisica) ? 'confirmed' : ''}`}
                         >
                             <p>Nome: {plantao.nm_medico}</p>
+                            <p>Plantonista origem: {plantao.nm_medico_origem}</p>
                             <p>Tipo de Escala: {plantao.escala}</p>
                             <p>Dia da semana: {plantao.dia_semana}</p>
                             <p>Início: {plantao.dt_inicio}</p>
                             <p>Fim: {plantao.dt_fim}</p>
+                            <p>Início real: {plantao.dt_inicial}</p>
+                            <p>Final real: {plantao.dt_final}</p>
                             <p>Status: {plantao.situacao}</p>
-                            {plantao.situacao !== 'Finalizado' && (
+                            {plantao.situacao !== 'Finalizado' && plantao.situacao !== 'Iniciado' && (
                                 <button onClick={() => confirmarPlantao(plantao)}>
                                     Confirmar
+                                </button>
+                            )}
+                            {plantao.situacao === 'Iniciado' && (
+                                <button onClick={() => putEncerrarPlantao(plantao)}>
+                                    Encerrar
                                 </button>
                             )}
                         </div>
