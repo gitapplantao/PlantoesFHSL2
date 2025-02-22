@@ -24,6 +24,7 @@ function PlantoesLista() {
   const [plantaoHorario, setPlantaoHorario] = useState(false);
   const [plantaoFinal, setPromptPlantaoFinal] = useState(false);
   const [plantaoMultiplos, setPlantaoMultiplos] = useState(false);
+  const [requestEnviado, setRequestEnviado] = useState(false);
 
   
   const handleRadioChange = (event) => {
@@ -198,6 +199,8 @@ function PlantoesLista() {
       return;
     }
 
+    setRequestEnviado(true);
+
     try {
       const token = sessionStorage.getItem('token');
       const dt_inicioFormatted = convertToCustomFormat(plantaoAtual.dt_inicio);
@@ -205,6 +208,7 @@ function PlantoesLista() {
 
       if (!dt_inicioFormatted || !dt_finalFormatted) {
         console.error('Erro: Datas formatadas são inválidas.');
+        setRequestEnviado(false);
         return;
       }
 
@@ -264,6 +268,8 @@ function PlantoesLista() {
       if (error.response && error.response.status === 406) {
         setPlantaoHorario(true);
       }
+    } finally {
+      setRequestEnviado(false);
     }
   };
   const finalizarPlantao = async (plantao) => {
@@ -724,7 +730,7 @@ function PlantoesLista() {
               {plantaoHorario && (<div className="permissao-plantao-mensagem"> Você não pode iniciar um plantão fora do horário da escala. </div>)}
               {plantaoMultiplos && (<div className="permissao-plantao-mensagem"> Atenção! Você já tem um plantão iniciado. </div>)}
             </div>
-            <button className="confirm-button-plantoes" onClick={handleSubmitPlantao}>Confirmar</button>
+            <button className="confirm-button-plantoes" onClick={handleSubmitPlantao} disabled={requestEnviado}>{requestEnviado ? "Confirmando..." : "Confirmar"}</button>
           </div>
         </div>)}
 

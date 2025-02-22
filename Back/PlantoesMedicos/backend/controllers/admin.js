@@ -641,10 +641,10 @@ async function confirmarPlantao(req, res) {
         break;
 
       case 'CAD': //cardiologia
-        if (horas >= 7 && horas <= 18) { //cardiologia FDS e feriado diurno
+        if (horas >= 7 && horas <= 18) { //diurno
           nr_Seq_tipo_plantao = 56;
           nr_seq_regra_esp = 56;
-        } else { // cardiologia FDS e feriado noite
+        } else { //noturno
           nr_Seq_tipo_plantao = 54;
           nr_seq_regra_esp = 54;
         }
