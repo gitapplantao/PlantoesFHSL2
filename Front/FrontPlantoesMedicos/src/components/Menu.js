@@ -9,17 +9,17 @@ import logo from './styles/img/logo-normal-verde.svg';
 const Menu = () => {
   const navigate = useNavigate();
   const [isAdmin, setIsAdmin] = useState(false);
-  const [promptSuporte, setSuportePrompt] = useState(false); // Estado para o popup de suporte
+  const [promptSuporte, setSuportePrompt] = useState(false);
 
   useEffect(() => {
     const checkAdminStatus = () => {
       const token = sessionStorage.getItem('token');
-      console.log('Token encontrado no localStorage:', token); // Debug
+      console.log('Token encontrado no localStorage:', token);
       if (token) {
         try {
           const decodedToken = jwtDecode(token);
-          console.log('Payload decodificado:', decodedToken); // Verifique o conteúdo do payload
-          setIsAdmin(decodedToken.isAdmin === true); // Ajuste conforme o tipo de isAdmin
+          console.log('Payload decodificado:', decodedToken);
+          setIsAdmin(decodedToken.isAdmin === true);
         } catch (error) {
           console.error('Erro ao decodificar token:', error);
         }
@@ -43,7 +43,7 @@ const Menu = () => {
       });
 
       sessionStorage.removeItem('token');
-      window.location.href = '/login'; // Redireciona para a página de login
+      window.location.href = '/login';
     } catch (error) {
       console.error('Erro ao fazer logout:', error);
     }

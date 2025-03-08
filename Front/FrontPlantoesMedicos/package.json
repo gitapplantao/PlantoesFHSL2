@@ -9,6 +9,7 @@
     "axios": "^1.7.2",
     "cors": "^2.8.5",
     "date-fns": "^3.6.0",
+    "date-holidays": "^3.23.22",
     "file-saver": "^2.0.5",
     "jwt-decode": "^4.0.0",
     "plantao-app-frontend": "file:",

@@ -591,7 +591,7 @@ async function confirmarPlantao(req, res) {
           nr_seq_regra_esp = 48
         } else { //noturno
           nr_Seq_tipo_plantao = 42;
-          nr_sequencia = 44;
+          nr_seq_regra_esp = 44;
         }
         break;
 
@@ -640,14 +640,20 @@ async function confirmarPlantao(req, res) {
         }
         break;
 
-      case 'CAD': //cardiologia
-        if (horas >= 7 && horas <= 18) { //diurno
-          nr_Seq_tipo_plantao = 56;
-          nr_seq_regra_esp = 56;
-        } else { //noturno
-          nr_Seq_tipo_plantao = 54;
-          nr_seq_regra_esp = 54;
-        }
+        case 'CAD': //cardiologia
+          if (horas >= 7 && horas <= 18 && (diaSemana !== 'Sábado' && diaSemana !== 'Domingo')) {// diurno padrão
+            nr_Seq_tipo_plantao = 57;
+            nr_seq_regra_esp = 90;
+          } else if (horas >= 7 && horas <= 18 && (diaSemana === 'Sábado' || diaSemana === 'Domingo')) { // diurno final de semana
+            nr_Seq_tipo_plantao = 56;
+            nr_seq_regra_esp = 56;
+          } else if ((horas >= 19 || horas < 7) && (diaSemana === 'Sábado' || diaSemana === 'Domingo')) { // noturno final de semana
+            nr_Seq_tipo_plantao = 54;
+            nr_seq_regra_esp = 54;
+          } else { // noturno padrão
+            nr_Seq_tipo_plantao = 59;
+            nr_seq_regra_esp = 91;
+          }
         break;
 
       default:
@@ -681,7 +687,7 @@ async function confirmarPlantao(req, res) {
               :nr_Seq_tipo_plantao, 
               :nr_seq_regra_esp, 
               SYSDATE, 
-              'app', 
+              'Plantões FHSL', 
               (TO_DATE(:dt_final, 'DD/MM/YYYY HH24:MI:SS') - TO_DATE(:dt_inicial, 'DD/MM/YYYY HH24:MI:SS')) * 24 * 60
           )
       `;
