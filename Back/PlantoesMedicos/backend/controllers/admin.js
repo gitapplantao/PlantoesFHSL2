@@ -364,7 +364,7 @@ SELECT
     FROM 
         fhsl_plantoes_app_tasy t
     LEFT JOIN MEDICO_PLANTAO m ON t.cd_pessoa_fisica = m.cd_medico 
-    AND to_char(t.dt_inicio,'dd/mm/yyyy hh24') = to_char(m.dt_inicial,'dd/mm/yyyy hh24')
+    AND to_char(t.dt_inicio,'dd/mm/yyyy hh24') = to_char(m.dt_inicial_prev,'dd/mm/yyyy hh24')
     WHERE 
         t.tipo_escala = :tipo_escala
     AND to_char(t.dt_inicio, 'mm/yyyy') = :mesAno
