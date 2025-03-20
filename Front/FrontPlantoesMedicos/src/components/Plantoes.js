@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { format, parseISO, parse, isValid } from 'date-fns';
 import './styles/plantoesRefeito.css';
+import logo from './styles/img/logo-normal-verde.svg';
 import Header from './header';
 import api from '../api/config';
 
@@ -25,8 +26,9 @@ function PlantoesLista() {
   const [plantaoFinal, setPromptPlantaoFinal] = useState(false);
   const [plantaoMultiplos, setPlantaoMultiplos] = useState(false);
   const [requestEnviado, setRequestEnviado] = useState(false);
+  const [promptAvisoFinal, setPromptAvisoFinal] = useState(false);
 
-  
+
   const handleRadioChange = (event) => {
     setTipoEscala(event.target.value);
   };
@@ -234,7 +236,7 @@ function PlantoesLista() {
       setPlantoes((prevPlantoes) =>
         prevPlantoes.map((plantao) =>
           plantao.nr_sequencia === plantaoId
-            ? { ...plantao, situacao: 'Iniciado' } // Atualiza o estado local
+            ? { ...plantao, situacao: 'Iniciado' }
             : plantao
         )
       );
@@ -272,45 +274,42 @@ function PlantoesLista() {
       setRequestEnviado(false);
     }
   };
+
+  const convertToCustomFormat = (dateString) => {
+    const formatString = 'dd/MM/yyyy HH:mm:ss';
+    if (!dateString) {
+      console.error('Erro: dateString está vazio ou indefinido.');
+      return null;
+    }
+    try {
+      const parsedDate = parse(dateString, formatString, new Date());
+      return isValid(parsedDate) ? format(parsedDate, formatString) : null;
+    } catch (error) {
+      console.error('Erro ao converter data:', error);
+      return null;
+    }
+  };
+
   const finalizarPlantao = async (plantao) => {
     if (!plantaoAtual) {
       console.error('Erro: Nenhum plantão foi selecionado.');
       return;
     }
 
-    const convertToCustomFormat = (dateString) => {
-      const formatString = 'dd/MM/yyyy HH:mm:ss';
-      if (!dateString) {
-        console.error('Erro: dateString está vazio ou indefinido.');
-        return null;
-      }
-      try {
-        const parsedDate = parse(dateString, formatString, new Date());
-        return isValid(parsedDate) ? format(parsedDate, formatString) : null;
-      } catch (error) {
-        console.error('Erro ao converter data:', error);
-        return null;
-      }
-    };
-    
-
     try {
-
       if (!password) {
-        alert("Por favor informe sua senha.")
+        alert("Por favor informe sua senha.");
         return;
       }
 
       const token = sessionStorage.getItem("token");
       const plantaoId = plantaoAtual.NR_SEQUENCIA;
-      const dt_inicioFormatted = convertToCustomFormat(plantaoAtual.dt_inicio);
-      const dt_finalFormatted = convertToCustomFormat(plantaoAtual.dt_fim);
 
       const requestBody = {
         plantaoId,
         tipo_escala: plantaoAtual.tipo_escala,
-        dt_inicio: dt_inicioFormatted,
-        dt_final: dt_finalFormatted,
+        dt_inicio: plantaoAtual.dt_inicio,
+        dt_final: plantaoAtual.dt_fim,
         password
       };
 
@@ -322,7 +321,9 @@ function PlantoesLista() {
         },
       });
 
-      setFinalizado(new Set([...finalizado, plantao.cd_pessoa_fisica]));
+      setPromptAvisoFinal(true);
+
+      setFinalizado(new Set([...finalizado, plantaoAtual.cd_pessoa_fisica]));
       fetchPlantoes();
       setScrollPosition(window.scrollY);
       setPlantoesPromptFinalizar(false);
@@ -331,23 +332,21 @@ function PlantoesLista() {
       setPlantaoHorario(false);
       setPromptPlantaoFinal(false);
       setPasswordError(false);
+
     } catch (error) {
-      if (error.response) {
-        console.error("Erro ao finalizar plantão:", error.response.data);
-        setErro(`Erro ao finalizar plantão: ${error.response.data.message || "Erro desconhecido"}`)
-      }
-      if (error.response && error.response.status === 401) {
+      if (error.response?.status === 401) {
         setPasswordError(true);
       }
-      if (error.response && error.response.status === 406) {
+      if (error.response?.status === 406) {
         setPromptPlantaoFinal(true);
-      } else {
-        console.error("Erro ao finalizar plantão:", error);
-        setErro("Erro ao finalizar plantão.");
+        return; 
       }
-    }
 
+      console.error("Erro ao finalizar plantão:", error);
+      setErro("Erro ao finalizar plantão.");
+    }
   };
+
 
   /*const confirmarPlantao = async (plantao) => {
       const convertToCustomFormat = (dateString) => {
@@ -397,9 +396,8 @@ function PlantoesLista() {
   }; */
 
   useEffect(() => {
-    // Após a atualização do estado, volta para a posição de rolagem anterior
     window.scrollTo(0, scrollPosition);
-  }, [plantoes, scrollPosition]); // Roda sempre que 'plantoes' ou 'scrollPosition' mudar
+  }, [plantoes, scrollPosition]);
 
 
   return (
@@ -757,7 +755,37 @@ function PlantoesLista() {
               {plantaoHorario && (<div className="permissao-plantao-mensagem"> Você não pode finalizar um plantão fora do horário escala. </div>)}
               {plantaoFinal && (<div className="permissao-plantao-mensagem"> Você não pode finalizar um plantão fora do horário da escala. </div>)}
             </div>
-            <button className="confirm-button-plantoes" onClick={finalizarPlantao}> Confirmar </button>
+            <button
+              className="confirm-button-plantoes"
+              onClick={() => {
+                if (plantaoAtual) {
+                  finalizarPlantao(plantaoAtual);
+                } else {
+                  console.error("Erro: Nenhum plantão foi selecionado.");
+                }
+              }}
+            >
+              Confirmar
+            </button>
+          </div>
+        </div>)}
+      {promptAvisoFinal && (
+        <div className='dimmer'>
+          <div className='modal-aviso'>
+            <div className='titulo-aviso'>
+              <strong><p className='titulo-aviso-texto'>Aviso</p></strong>
+            </div>
+            <div className='conteudo-aviso'>
+              <p className='conteudo-aviso-texto'>Prezados médicos,<br /> <br />Solicitamos sua atenção para a liberação das evoluções e a conclusão dos desfechos de alta dos pacientes. Agradecemos sua colaboração</p>
+            </div>
+            <div className='logo-aviso'>
+              <img
+                src={logo}
+                className='logo-aviso-img'
+                alt='Logo'
+              />
+            </div>
+            <strong><span className='close-aviso' onClick={() => setPromptAvisoFinal(false)}>&times;</span></strong>
           </div>
         </div>)}
     </div>

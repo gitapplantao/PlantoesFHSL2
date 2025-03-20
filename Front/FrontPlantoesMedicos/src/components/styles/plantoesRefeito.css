@@ -327,6 +327,74 @@ input[type="checkbox"] {
   justify-content: flex-start;
 }
 
+.modal-aviso {
+  width: 40em;
+  height: 20em;
+  background-color: #444;
+  border-color: #6cbc84;
+  border-style: solid;
+  border-width: 2px;
+  border-radius: 5px;
+  position: fixed;
+  display: flex;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1000;
+}
+
+.titulo-aviso {
+width: 40em;
+height: 20em;
+display: flex;
+justify-content: center;
+}
+
+.titulo-aviso-texto {
+  font-size: 20px
+}
+
+.conteudo-aviso {
+  display: flex;
+  position: absolute;
+  top: 20%;
+  left: 1%;
+}
+
+.conteudo-aviso-texto {
+  display: flex;
+  text-align: justify;
+}
+
+.close-aviso {
+  position: absolute;
+  top: 15px;
+  right: 20px;
+  cursor: pointer;
+  color: #fff;
+  font-size: 20px;
+  transition: 0.4s;
+}
+
+.logo-aviso {
+  display: flex;
+  position: absolute;
+  width: 15em;
+  height: 5em;
+  left: 66%;
+  top: 75%;
+}
+
+.logo-aviso-img {
+  display: flex;
+  width: 200px;
+}
+
+.close-aviso:hover {
+  transition: 0.4s;
+  color: #6cbc84;
+}
+
 .confirm-button-plantoes {
   background-color: #6cbc84 !important;
   color: #ffffff !important;
@@ -364,5 +432,15 @@ input[type="date"] {
   
   .plantao-card {
       width: 20em;
+  }
+
+  .modal-aviso {
+    width: 22em;
+  }
+
+  .logo-aviso {
+    position: absolute;
+    left: 80px;
+    top: 200px;
   }
   }

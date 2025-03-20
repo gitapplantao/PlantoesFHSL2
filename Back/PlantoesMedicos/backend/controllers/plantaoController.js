@@ -74,8 +74,8 @@ async function getPlantoesListagem(req, res) {
             t.cd_pessoa_fisica,  
             t.escala,
             CASE 
-                WHEN m.cd_medico IS NOT NULL AND m.dt_inicial IS NOT NULL AND m.dt_final IS NULL THEN 'Iniciado'
-                WHEN m.cd_medico IS NOT NULL AND m.dt_inicial IS NOT NULL AND m.dt_final IS NOT NULL THEN 'Finalizado'
+                WHEN m.cd_medico IS NOT NULL AND m.dt_inicial IS NOT NULL AND m.dt_final IS NULL AND t.TIPO_ESCALA = :tipo_escala AND t.escala = fhsl_obter_escala_medico_plantao(T.nr_sequencia,m.nr_seq_tipo_plantao) THEN 'Iniciado'
+                WHEN m.cd_medico IS NOT NULL AND m.dt_inicial IS NOT NULL AND m.dt_final IS NOT NULL AND t.TIPO_ESCALA = :tipo_escala AND t.escala = fhsl_obter_escala_medico_plantao(T.nr_sequencia,m.nr_seq_tipo_plantao)  THEN 'Finalizado'
                 ELSE NULL
             END AS status,
             Obter_Dia_Semana(dt_inicio)
@@ -89,6 +89,7 @@ async function getPlantoesListagem(req, res) {
          WHERE 
             t.tipo_escala = :tipo_escala
             AND to_char(t.dt_inicio, 'dd/mm/yyyy') = :diaMesAno
+            AND t.escala = obter_desc_escala(nr_seq_escala)
       `;
     const result = await connection.execute(query, { tipo_escala, diaMesAno });
 
@@ -240,12 +241,12 @@ async function iniciarPlantao(req, res) {
     let minutosAtual = verificarHoraAtual.getMinutes(); // pega os minutos com base no dia atual do sistema
     let diaAtual = verificarHoraAtual.getDate(); // pega a dia criado no verificarHoraAtual
     let diaPlantao = dtInicio.getDate(); // pega o dia do plantão
-    const obterFeriados = new calendarioFeriados('BR', 'pr')
-    const feriado = obterFeriados.getHolidays(2025);
+    /*const obterFeriados = new calendarioFeriados('BR', 'pr')
+    const feriado = obterFeriados.getHolidays(2025);*/
 
     console.log(`Dia da semana: ${diaSemana}, Horas ${horas}`)
     console.log(`Hora atual: ${horaAtual} Minutos atuais: ${minutosAtual} - Dia atual: ${diaAtual} - Dia do plantão: ${diaPlantao}`)
-    console.log(JSON.stringify(feriado, null, 2));
+    //console.log(JSON.stringify(feriado, null, 2));
 
     let nr_Seq_tipo_plantao, nr_seq_regra_esp;
 
@@ -446,7 +447,7 @@ async function iniciarPlantao(req, res) {
           }
           nr_Seq_tipo_plantao = 51;
           nr_seq_regra_esp = 51;
-        } else if (horas >= 19 || horas < 7) { // noite
+        } else if (horas >= 19) { // noite
           if (horaAtual < 18 || (horaAtual === 18 && minutosAtual < 30) ||
             horaAtual > 20 || (horaAtual === 20 && minutosAtual > 0)) {
             return res.status(406).json({ message: "Plantão sendo iniciado fora dos horários permitidos para o período noturno (18:30 - 20:00)" });
@@ -464,21 +465,10 @@ async function iniciarPlantao(req, res) {
         }
 
         if ((horas >= 7 && horas <= 18) && (diaSemana !== "Sábado" && diaSemana !== "Domingo")) { // diurno padrão
-          if (((horaAtual < 6 || (horaAtual === 6 && minutosAtual < 30)) ||
-            (horaAtual > 8 || (horaAtual === 8 && minutosAtual > 0))) &&
-            ((horaAtual < 12 || (horaAtual === 12 && minutosAtual < 30)) ||
-              (horaAtual > 14 || (horaAtual === 14 && minutosAtual > 0)))) {
-            return res.status(406).json({ message: "Plantão sendo iniciado fora dos horários permitidos para o período diurno (06:30 - 08:00 e 12:30 - 14:00)" });
-          }
+
           nr_Seq_tipo_plantao = 24;
           nr_seq_regra_esp = 25;
         } else if ((horas >= 7 && horas <= 18) && (diaSemana === "Sábado" || diaSemana === "Domingo")) { // diurno FDS
-          if (((horaAtual < 6 || (horaAtual === 6 && minutosAtual < 30)) ||
-            (horaAtual > 7 || (horaAtual === 7 && minutosAtual > 30))) &&
-            ((horaAtual < 12 || (horaAtual === 12 && minutosAtual < 30)) ||
-              (horaAtual > 14 || (horaAtual === 14 && minutosAtual > 0)))) {
-            return res.status(406).json({ message: "Plantão sendo iniciado fora dos horários permitidos para o período diurno (06:30 - 08:00 e 12:30 - 14:00)" });
-          }
           nr_Seq_tipo_plantao = 22;
           nr_seq_regra_esp = 24;
         } else if ((horas >= 19 || horas < 7)) { // noturno
@@ -944,13 +934,19 @@ async function finalizarPlantao(req, res) {
     const dataHoraAtual = new Date(); //cria uma data com base no dia atual do sistema
     const diaAtual = dataHoraAtual.getDate();
     let horaAtual = dataHoraAtual.getHours(); //pega as horas com base no dia atual do sistema
+    const horaInicio = dtInicio.getHours(); //pega as horas da data inicial do plantão
     const horaFinal = dtFinal.getHours(); //pega as horas da data final do plantão
     const dataHoraComparar = new Date(dataHoraAtual); //peganda a data de uma data para comparar
     dataHoraComparar.setMinutes(0, 0, 0); //pegando os minutos da hora comparada e definindo eles para 00.0
     dataHoraComparar.setHours(dtFinal.getHours() + 2); //pegando as horas da hora final do plantão, e incrementando + 2 para obter o tempo de 1 hora para a finalização do plantão
+
     const dataHoraCompararPS2 = new Date(dataHoraAtual) //criado específico para o ps2... não usar para outros tipos de plantões
     dataHoraCompararPS2.setMinutes(0,0,0);
     dataHoraCompararPS2.setHours(dtFinal.getHours() + 1);
+
+    const dataHoraCompararApoioHKIDS = new Date(dataHoraAtual) //criado para o novo horário do apoio KIDS
+    dataHoraCompararApoioHKIDS.setMinutes(0,0,0);
+    dataHoraCompararApoioHKIDS.setHours(dtFinal.getHours() + 1);
 
     console.log(`Hora atual do sistema: ${horaAtual}`)
     console.log(`Dia atual do sistema: ${diaAtual}`)
@@ -1020,7 +1016,7 @@ async function finalizarPlantao(req, res) {
         break;
 
       case 'HKIDS':
-        if (horaAtual >= dataHoraComparar.getHours() || diaAtual > dtFinal.getDate()) {
+        if (horaAtual >= dataHoraCompararApoioHKIDS.getHours() || diaAtual > dtFinal.getDate()) {
           return res.status(406).json({ message: "Plantão sendo finalizado fora do horário da escala." })
         }
         break;
